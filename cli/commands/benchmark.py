@@ -9,7 +9,7 @@ from cli.formatting import get_console, print_error, print_json_output
 
 benchmark_app = typer.Typer(
     name="benchmark",
-    help="Execute, inspect, and compare production performance benchmark workloads.",
+    help="Execute, inspect, compare, and report production performance benchmark workloads.",
 )
 
 
@@ -120,6 +120,25 @@ def benchmark_compare(
 
     except Exception as err:
         print_error(f"Benchmark comparison failed: {err}")
+        raise typer.Exit(code=1) from err
+
+
+@benchmark_app.command(name="report", help="Generate and print benchmark report in Markdown, JSON, or CSV format.")
+def benchmark_report(
+    run_id: str = typer.Argument(..., help="Target Benchmark Run ID."),
+    format: str = typer.Option("markdown", "--format", "-f", help="Output report format (markdown, json, csv)."),
+    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+) -> None:
+    """Generate and print benchmark report."""
+    target_url = f"{url.rstrip('/')}/benchmarks/{run_id}/report?format={format}"
+
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            res = client.get(target_url)
+            res.raise_for_status()
+            print(res.text)
+    except Exception as err:
+        print_error(f"Failed to generate benchmark report: {err}")
         raise typer.Exit(code=1) from err
 
 
