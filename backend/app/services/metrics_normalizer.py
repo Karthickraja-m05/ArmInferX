@@ -104,7 +104,8 @@ class MetricsNormalizer:
         for metric_key in metric_directions.keys():
             vals = []
             for run in runs_data:
-                v = run.get(metric_key) or run.get("metrics_summary", {}).get(metric_key)
+                m_summary = run.get("metrics_summary") if isinstance(run.get("metrics_summary"), dict) else {}
+                v = run.get(metric_key) or m_summary.get(metric_key)
                 if v is not None:
                     vals.append(float(v))
             if vals:
@@ -116,6 +117,7 @@ class MetricsNormalizer:
         for run in runs_data:
             run_id = run.get("run_id") or run.get("experiment_id", "N/A")
             ts = run.get("timestamp") or run.get("started_at", "N/A")
+            m_summary = run.get("metrics_summary") if isinstance(run.get("metrics_summary"), dict) else {}
 
             norm_items: list[NormalizedMetricItem] = []
             score_acc = 0.0
@@ -126,7 +128,7 @@ class MetricsNormalizer:
                     continue
 
                 min_v, max_v = bounds[m_key]
-                raw_v = run.get(m_key) or run.get("metrics_summary", {}).get(m_key)
+                raw_v = run.get(m_key) or m_summary.get(m_key)
                 if raw_v is None:
                     continue
 

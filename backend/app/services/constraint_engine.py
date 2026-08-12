@@ -35,13 +35,15 @@ class ConstraintEngine:
     @classmethod
     def evaluate_constraints(
         cls,
-        metrics_summary: dict[str, Any],
+        metrics_summary: dict[str, Any] | None,
         spec: ConstraintSpec | None = None,
         estimated_cost_per_hr: float = 0.034,  # e.g., Graviton c7g.large
     ) -> ConstraintEvaluationResult:
         """Evaluate metrics against SLA constraint specification."""
         if spec is None:
             spec = ConstraintSpec()
+        if metrics_summary is None:
+            metrics_summary = {}
 
         accepted: list[str] = []
         violated: list[str] = []
@@ -49,7 +51,7 @@ class ConstraintEngine:
 
         # 1. P50 Latency Constraint
         if spec.max_latency_p50_ms is not None:
-            actual = float(metrics_summary.get("latency_p50_ms", 0.0))
+            actual = float(metrics_summary.get("latency_p50_ms") or 0.0)
             if actual <= spec.max_latency_p50_ms:
                 accepted.append(f"latency_p50_ms ({actual:.2f}ms <= {spec.max_latency_p50_ms:.2f}ms)")
             else:
@@ -59,7 +61,7 @@ class ConstraintEngine:
 
         # 2. P99 Latency Constraint
         if spec.max_latency_p99_ms is not None:
-            actual = float(metrics_summary.get("latency_p99_ms", metrics_summary.get("latency_p50_ms", 0.0)))
+            actual = float(metrics_summary.get("latency_p99_ms") or metrics_summary.get("latency_p50_ms") or 0.0)
             if actual <= spec.max_latency_p99_ms:
                 accepted.append(f"latency_p99_ms ({actual:.2f}ms <= {spec.max_latency_p99_ms:.2f}ms)")
             else:
@@ -69,7 +71,7 @@ class ConstraintEngine:
 
         # 3. Minimum Throughput RPS Constraint
         if spec.min_throughput_rps is not None:
-            actual = float(metrics_summary.get("requests_per_second", 0.0))
+            actual = float(metrics_summary.get("requests_per_second") or 0.0)
             if actual >= spec.min_throughput_rps:
                 accepted.append(f"min_throughput_rps ({actual:.2f} RPS >= {spec.min_throughput_rps:.2f} RPS)")
             else:
@@ -79,7 +81,7 @@ class ConstraintEngine:
 
         # 4. Maximum Memory RSS Constraint
         if spec.max_memory_mb is not None:
-            actual = float(metrics_summary.get("peak_memory_mb", 0.0))
+            actual = float(metrics_summary.get("peak_memory_mb") or 0.0)
             if actual <= spec.max_memory_mb:
                 accepted.append(f"max_memory_mb ({actual:.2f}MB <= {spec.max_memory_mb:.2f}MB)")
             else:
@@ -89,7 +91,7 @@ class ConstraintEngine:
 
         # 5. Maximum Error Rate Constraint
         if spec.max_error_rate is not None:
-            actual = float(metrics_summary.get("error_rate", 0.0))
+            actual = float(metrics_summary.get("error_rate") or 0.0)
             if actual <= spec.max_error_rate:
                 accepted.append(f"max_error_rate ({actual:.2%} <= {spec.max_error_rate:.2%})")
             else:
