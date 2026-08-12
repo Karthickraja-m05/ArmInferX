@@ -12,9 +12,11 @@ import gguf
 import structlog
 from pydantic import BaseModel, Field
 
+from backend.app.core.config import settings
+
 logger = structlog.get_logger("backend.app.services.inference_engine")
 
-MODEL_PATH = "storage/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+MODEL_PATH = settings.runtime.model_path
 
 
 class ChatMessage(BaseModel):
@@ -25,8 +27,8 @@ class ChatMessage(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str = Field(default="qwen2.5-0.5b-instruct")
     messages: list[ChatMessage]
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
-    max_tokens: int = Field(default=256, ge=1, le=4096)
+    temperature: float = Field(default=settings.runtime.temperature, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=settings.runtime.max_tokens, ge=1, le=4096)
     top_p: float = Field(default=0.9, ge=0.0, le=1.0)
     stream: bool = Field(default=False)
 
@@ -34,8 +36,8 @@ class ChatCompletionRequest(BaseModel):
 class CompletionRequest(BaseModel):
     model: str = Field(default="qwen2.5-0.5b-instruct")
     prompt: str
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
-    max_tokens: int = Field(default=256, ge=1, le=4096)
+    temperature: float = Field(default=settings.runtime.temperature, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=settings.runtime.max_tokens, ge=1, le=4096)
     top_p: float = Field(default=0.9, ge=0.0, le=1.0)
     stream: bool = Field(default=False)
 
@@ -50,8 +52,11 @@ class ModelInfo(BaseModel):
 class InferenceEngine:
     """Production Inference Engine for ArmServe ARM64 infrastructure."""
 
-    def __init__(self, model_path: str = MODEL_PATH):
-        self.model_path = model_path
+    def __init__(self, model_path: str | None = None):
+        self.model_path = model_path or settings.runtime.model_path
+        self.context_length = settings.runtime.context_length
+        self.thread_count = settings.runtime.thread_count
+        self.batch_size = settings.runtime.batch_size
         self.reader: gguf.GGUFReader | None = None
         self.loaded: bool = False
         self.load_model()

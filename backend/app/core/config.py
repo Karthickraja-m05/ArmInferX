@@ -122,13 +122,25 @@ class AuthConfig(BaseModel):
     api_key_header_name: str = Field(default="X-API-Key")
 
 
+class RuntimeConfig(BaseModel):
+    model_config = ConfigDict(extra="ignore", protected_namespaces=())
+
+    model_path: str = Field(default="storage/models/qwen2.5-0.5b-instruct-q4_k_m.gguf")
+    context_length: int = Field(default=2048, ge=128, le=32768)
+    thread_count: int = Field(default=4, ge=1, le=128)
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    max_tokens: int = Field(default=256, ge=1, le=4096)
+    batch_size: int = Field(default=128, ge=1, le=2048)
+    server_port: int = Field(default=8000, ge=1024, le=65535)
+    timeout_seconds: float = Field(default=60.0, ge=1.0, le=600.0)
+
+
 class ArmServeSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
         env_prefix="ARMSERVE_",
         env_nested_delimiter="__",
+        case_sensitive=False,
+        extra="ignore",
     )
 
     # Top-level settings maps
@@ -137,6 +149,7 @@ class ArmServeSettings(BaseSettings):
     cloud: CloudProviderConfig = Field(default_factory=CloudProviderConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
+    runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)
     optimization: OptimizationConfig = Field(default_factory=OptimizationConfig)
     observability: ObservabilityConfig = Field(default_factory=ObservabilityConfig)
     auth: AuthConfig = Field(default_factory=AuthConfig)

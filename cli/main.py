@@ -4,6 +4,7 @@ from typing import Optional
 
 import typer
 
+from cli.commands.benchmark import benchmark_app
 from cli.commands.config import config_app
 from cli.commands.health import health_command
 from cli.commands.system import system_app
@@ -20,6 +21,7 @@ app = typer.Typer(
 # Register Sub-Apps (Command Groups)
 app.add_typer(system_app, name="system")
 app.add_typer(config_app, name="config")
+app.add_typer(benchmark_app, name="benchmark")
 
 # Register Top-Level Commands
 app.command(name="health", help="Check ArmServe backend system health status.")(health_command)
