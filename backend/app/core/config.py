@@ -4,6 +4,7 @@ Enforces strongly-typed nested configuration, secret masking (SecretStr),
 environment separation (development/test/production), and startup validation rules.
 """
 
+import os
 from enum import Enum
 
 from pydantic import (
@@ -167,6 +168,8 @@ class ArmServeSettings(BaseSettings):
             self.auth.secret_key = self.SECRET_KEY
         if self.DATABASE_URL is not None:
             self.database.database_url = self.DATABASE_URL
+        elif os.getenv("DATABASE_URL"):
+            self.database.database_url = SecretStr(os.getenv("DATABASE_URL") or "")
         if self.DB_PASSWORD is not None:
             self.database.password = self.DB_PASSWORD
 
