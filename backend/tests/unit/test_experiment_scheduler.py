@@ -13,21 +13,31 @@ from backend.app.services.experiment_scheduler import ExperimentScheduler
 client = TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def reset_scheduler_state():
+    """Reset global ExperimentScheduler state between test cases."""
+    scheduler = ExperimentScheduler()
+    scheduler.queue.clear()
+    scheduler.current_config_id = None
+    scheduler.status = "IDLE"
+    scheduler.completed_count = 0
+    scheduler.failed_count = 0
+    scheduler.scheduling_events.clear()
+
+
 def test_scheduler_queue_enqueuing():
     """Test enqueuing configurations into scheduler queue."""
     scheduler = ExperimentScheduler()
-    scheduler.queue.clear()
-    enqueued = scheduler.enqueue_configurations(["cfg-101", "cfg-102"])
+    enqueued = scheduler.enqueue_configurations(["cfg-unit-1", "cfg-unit-2"])
     assert len(enqueued) == 2
-    assert scheduler.get_status().pending_count >= 2
+    assert scheduler.get_status().pending_count == 2
 
 
 @pytest.mark.asyncio
 async def test_scheduler_sequential_processing():
     """Test sequential processing loop and completion tracking."""
     scheduler = ExperimentScheduler()
-    scheduler.queue.clear()
-    scheduler.queue.append("cfg-mock-1")
+    scheduler.enqueue_configurations(["cfg-mock-1"])
 
     mock_record = ExperimentRunRecord(
         experiment_id="exp-mock-1",
@@ -42,6 +52,7 @@ async def test_scheduler_sequential_processing():
         assert len(records) == 1
         assert records[0].status == "COMPLETED"
         assert scheduler.get_status().pending_count == 0
+        assert scheduler.get_status().completed_count == 1
 
 
 def test_scheduler_status_api_endpoint():

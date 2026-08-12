@@ -60,7 +60,7 @@ class ExperimentScheduler:
         self.scheduling_events.append(entry)
         if len(self.scheduling_events) > 100:
             self.scheduling_events.pop(0)
-        logger.info("Scheduler Event", event=event_msg)
+        logger.info("Scheduler Event", event_details=event_msg)
 
     def enqueue_configurations(self, config_ids: list[str]) -> list[str]:
         """Enqueue one or more experiment configuration IDs for execution."""

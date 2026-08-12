@@ -21,21 +21,24 @@ def test_list_experiments_endpoint():
     assert isinstance(res.json(), list)
 
 
-def test_generate_experiment_configs_endpoint():
-    """Test POST /api/v1/experiments/generate endpoint."""
+def test_generate_experiment_configs_endpoint(tmp_path: Path):
+    """Test POST /api/v1/experiments/generate endpoint with isolated test directory."""
     payload = {
-        "thread_counts": [3, 5],
-        "batch_sizes": [96],
+        "thread_counts": [1, 2],
+        "batch_sizes": [64],
         "context_lengths": [2048],
-        "temperatures": [0.2],
+        "temperatures": [0.0],
         "max_tokens_list": [128],
         "model_id": "qwen2.5-0.5b-instruct",
     }
-    res = client.post("/api/v1/experiments/generate", json=payload)
-    assert res.status_code == status.HTTP_200_OK
-    data = res.json()
-    assert len(data) == 2
-    assert data[0]["config_id"].startswith("cfg-")
+    with patch("backend.app.api.v1.experiments.ConfigurationGenerator") as mock_gen_cls:
+        instance = ConfigurationGenerator(target_dir=tmp_path)
+        mock_gen_cls.return_value = instance
+        res = client.post("/api/v1/experiments/generate", json=payload)
+        assert res.status_code == status.HTTP_200_OK
+        data = res.json()
+        assert len(data) == 2
+        assert data[0]["config_id"].startswith("cfg-")
 
 
 @pytest.mark.asyncio
