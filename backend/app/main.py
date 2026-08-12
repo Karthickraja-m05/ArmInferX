@@ -83,11 +83,13 @@ app.add_exception_handler(SQLAlchemyError, db_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 from backend.app.api.v1.openai_api import router as openai_root_router
+from backend.app.api.v1.runtime import router as runtime_root_router
 
 # Include Routers
 app.include_router(root_health_router)
 app.include_router(api_v1_router)
 app.include_router(openai_root_router)
+app.include_router(runtime_root_router)
 
 
 @app.get("/", summary="Root Status Overview")
