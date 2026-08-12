@@ -1,109 +1,112 @@
-"""Experiment management API router with real database persistence."""
+"""Optimization Experiment Execution & Configuration REST API Router."""
 
-from uuid import UUID
+import json
+from pathlib import Path
+import time
+from typing import Optional
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
+import structlog
 
-from backend.app.core.dependencies import get_uow
-from backend.app.models.experiment import ExperimentRecord
-from backend.app.models.model_registry import ModelRecord, ModelVersionRecord
-from backend.app.repositories.unit_of_work import UnitOfWork
-from backend.app.schemas.experiment import ExperimentCreate, ExperimentResponse
+from backend.app.services.experiment_executor import EXPERIMENT_RUNS_DIR, ExperimentExecutor, ExperimentRunRecord
+from backend.app.services.experiment_generator import (
+    CONFIGS_DIR,
+    ConfigurationGenerator,
+    ExperimentConfigRecord,
+    ParameterRangeSpec,
+)
 
-router = APIRouter(prefix="/experiments", tags=["Experiments"])
+logger = structlog.get_logger("backend.app.api.v1.experiments")
 
-
-@router.post("", response_model=ExperimentResponse, status_code=status.HTTP_201_CREATED)
-async def create_experiment(
-    payload: ExperimentCreate,
-    uow: UnitOfWork = Depends(get_uow),
-) -> ExperimentResponse:
-    """Create a new optimization experiment stored in the real database."""
-    # Ensure target model version exists or create default model version
-    model_version = await uow.model_versions.get_by_id(payload.model_id)
-    if not model_version:
-        model = await uow.models.get_by_id(payload.model_id)
-        if not model:
-            model = await uow.models.create(
-                ModelRecord(id=payload.model_id, name=f"model-{payload.model_id}", framework="ONNX")
-            )
-        model_version = await uow.model_versions.create(
-            ModelVersionRecord(model_id=model.id, version="v1.0", format="ONNX")
-        )
-
-    exp_record = ExperimentRecord(
-        name=payload.name,
-        model_version_id=model_version.id,
-        status="CREATED",
-        budget=payload.budget,
-        constraints=payload.constraints.model_dump(),
-        search_space=payload.search_space.model_dump(),
-    )
-    created_exp = await uow.experiments.create(exp_record)
-    await uow.commit()
-
-    return ExperimentResponse(
-        id=created_exp.id,
-        name=created_exp.name,
-        status=created_exp.status,
-        model_id=payload.model_id,
-        constraints=payload.constraints.model_dump(),
-        search_space=payload.search_space.model_dump(),
-        budget=created_exp.budget,
-        created_at=created_exp.created_at,
-        updated_at=created_exp.updated_at,
-        trials=[],
-    )
+router = APIRouter(tags=["Experiments"])
 
 
-@router.get("", response_model=list[ExperimentResponse])
-async def list_experiments(
-    uow: UnitOfWork = Depends(get_uow),
-) -> list[ExperimentResponse]:
-    """List all optimization experiments stored in the database."""
-    experiments = await uow.experiments.list()
-    result: list[ExperimentResponse] = []
+@router.post("/experiments", status_code=status.HTTP_201_CREATED, response_model=dict, operation_id="create_experiment_direct")
+@router.post("/api/v1/experiments", status_code=status.HTTP_201_CREATED, response_model=dict, operation_id="create_experiment_api_v1")
+async def create_experiment(payload: dict) -> dict:
+    """Create a new experiment record."""
+    exp_id = str(uuid4())
+    now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    record = {
+        "id": exp_id,
+        "experiment_id": exp_id,
+        "name": payload.get("name", "optimization-exp"),
+        "status": "CREATED",
+        "model_id": payload.get("model_id", "qwen2.5-0.5b-instruct"),
+        "constraints": payload.get("constraints", {}),
+        "search_space": payload.get("search_space", {}),
+        "budget": payload.get("budget", 10),
+        "started_at": now_str,
+        "configuration": payload,
+    }
+    out_file = EXPERIMENT_RUNS_DIR / f"{exp_id}.json"
+    EXPERIMENT_RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    with open(out_file, "w", encoding="utf-8") as f:
+        f.write(json.dumps(record, indent=2))
+    return record
 
-    for exp in experiments:
-        result.append(
-            ExperimentResponse(
-                id=exp.id,
-                name=exp.name,
-                status=exp.status,
-                model_id=exp.model_version_id,
-                constraints=exp.constraints,
-                search_space=exp.search_space,
-                budget=exp.budget,
-                created_at=exp.created_at,
-                updated_at=exp.updated_at,
-                trials=[],
-            )
-        )
-    return result
+
+@router.post("/experiments/generate", response_model=list[ExperimentConfigRecord], operation_id="generate_experiment_configs_direct")
+@router.post("/api/v1/experiments/generate", response_model=list[ExperimentConfigRecord], operation_id="generate_experiment_configs_api_v1")
+async def generate_experiment_configs(spec: ParameterRangeSpec) -> list[ExperimentConfigRecord]:
+    """Generate valid, deduplicated experiment configuration manifests."""
+    try:
+        generator = ConfigurationGenerator()
+        configs = generator.generate_configurations(spec)
+        return configs
+    except Exception as err:
+        logger.error("Configuration generation error", error=str(err))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate configurations: {err}",
+        ) from err
 
 
-@router.get("/{experiment_id}", response_model=ExperimentResponse)
-async def get_experiment(
-    experiment_id: UUID,
-    uow: UnitOfWork = Depends(get_uow),
-) -> ExperimentResponse:
-    """Get details of a specific experiment by ID from the database."""
-    exp = await uow.experiments.get_with_relations(experiment_id)
-    if not exp:
+@router.post("/experiments/execute", response_model=ExperimentRunRecord, operation_id="execute_experiment_direct")
+@router.post("/api/v1/experiments/execute", response_model=ExperimentRunRecord, operation_id="execute_experiment_api_v1")
+async def execute_experiment(config_id: str) -> ExperimentRunRecord:
+    """Execute a real parameter optimization experiment against the inference runtime."""
+    try:
+        executor = ExperimentExecutor()
+        record = await executor.execute_experiment(config_id)
+        return record
+    except ValueError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Experiment not found",
-        )
+            detail=str(err),
+        ) from err
+    except Exception as err:
+        logger.error("Experiment execution error", error=str(err))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Experiment execution failed: {err}",
+        ) from err
 
-    return ExperimentResponse(
-        id=exp.id,
-        name=exp.name,
-        status=exp.status,
-        model_id=exp.model_version_id,
-        constraints=exp.constraints,
-        search_space=exp.search_space,
-        budget=exp.budget,
-        created_at=exp.created_at,
-        updated_at=exp.updated_at,
-        trials=[],
-    )
+
+@router.get("/experiments", response_model=list[dict], operation_id="list_experiments_direct")
+@router.get("/api/v1/experiments", response_model=list[dict], operation_id="list_experiments_api_v1")
+async def list_experiments(
+    status_filter: Optional[str] = Query(None, description="Filter by status (COMPLETED, FAILED, RUNNING)"),
+    model_id: Optional[str] = Query(None, description="Filter by model ID"),
+) -> list[dict]:
+    """List historical experiment run manifests with filtering."""
+    return ExperimentExecutor.list_experiments(status_filter=status_filter, model_id_filter=model_id)
+
+
+@router.get("/experiments/{exp_id}", response_model=dict, operation_id="get_experiment_by_id_direct")
+@router.get("/api/v1/experiments/{exp_id}", response_model=dict, operation_id="get_experiment_by_id_api_v1")
+async def get_experiment_by_id(exp_id: str) -> dict:
+    """Retrieve single experiment run manifest by ID."""
+    file_path = EXPERIMENT_RUNS_DIR / f"{exp_id}.json"
+    if not file_path.exists():
+        matches = list(EXPERIMENT_RUNS_DIR.glob(f"*{exp_id}*.json"))
+        if not matches:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Experiment '{exp_id}' not found.",
+            )
+        file_path = matches[0]
+
+    with open(file_path, encoding="utf-8") as f:
+        return json.load(f)

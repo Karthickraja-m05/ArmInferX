@@ -49,8 +49,9 @@ class ParameterRangeSpec(BaseModel):
 class ConfigurationGenerator:
     """Production Experiment Configuration Matrix Generator."""
 
-    def __init__(self) -> None:
-        CONFIGS_DIR.mkdir(parents=True, exist_ok=True)
+    def __init__(self, target_dir: Path | None = None) -> None:
+        self.target_dir = target_dir or CONFIGS_DIR
+        self.target_dir.mkdir(parents=True, exist_ok=True)
         self.max_vcpus = psutil.cpu_count(logical=True) or 16
 
     def compute_config_hash(self, params: dict[str, Any]) -> str:
@@ -86,7 +87,7 @@ class ConfigurationGenerator:
         seen_hashes: set[str] = set()
 
         # Load existing hashes to prevent duplicates
-        for existing_file in CONFIGS_DIR.glob("*.json"):
+        for existing_file in self.target_dir.glob("*.json"):
             try:
                 with open(existing_file, encoding="utf-8") as f:
                     data = json.load(f)
@@ -143,7 +144,7 @@ class ConfigurationGenerator:
             )
 
             # 3. Store configuration manifest
-            out_file = CONFIGS_DIR / f"{config_id}.json"
+            out_file = self.target_dir / f"{config_id}.json"
             with open(out_file, "w", encoding="utf-8") as f:
                 f.write(cfg_record.model_dump_json(indent=2))
 

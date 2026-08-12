@@ -1,13 +1,14 @@
 """Unit tests for Experiment Configuration Generator."""
 
+from pathlib import Path
 import pytest
 
 from backend.app.services.experiment_generator import ConfigurationGenerator, ParameterRangeSpec
 
 
-def test_generator_valid_configurations():
+def test_generator_valid_configurations(tmp_path: Path):
     """Test generating valid, deduplicated configurations."""
-    generator = ConfigurationGenerator()
+    generator = ConfigurationGenerator(target_dir=tmp_path)
     spec = ParameterRangeSpec(
         thread_counts=[1, 2, 4],
         batch_sizes=[64, 128],
@@ -22,9 +23,9 @@ def test_generator_valid_configurations():
     assert len({c.hash_signature for c in configs}) == 6
 
 
-def test_generator_deduplication():
+def test_generator_deduplication(tmp_path: Path):
     """Test preventing duplicate configuration generation."""
-    generator = ConfigurationGenerator()
+    generator = ConfigurationGenerator(target_dir=tmp_path)
     spec = ParameterRangeSpec(
         thread_counts=[2],
         batch_sizes=[128],
@@ -35,16 +36,17 @@ def test_generator_deduplication():
 
     # First run generates 1 config
     configs1 = generator.generate_configurations(spec)
+    assert len(configs1) == 1
+
     # Second identical run generates 0 configs (all deduplicated)
     configs2 = generator.generate_configurations(spec)
-
     assert len(configs2) == 0
 
 
-def test_generator_invalid_constraints():
+def test_generator_invalid_constraints(tmp_path: Path):
     """Test filtering invalid parameter constraints."""
-    generator = ConfigurationGenerator()
-    
+    generator = ConfigurationGenerator(target_dir=tmp_path)
+
     # Batch size > Context length -> Invalid
     invalid_params = {
         "thread_count": 4,
