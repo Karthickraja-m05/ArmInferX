@@ -1,0 +1,266 @@
+name: ArmServe CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.10"
+  NODE_VERSION: "20"
+  TERRAFORM_VERSION: "1.6.6"
+
+jobs:
+  # ─── Backend Checks ─────────────────────────────────────────────────
+  backend-format:
+    name: "Backend / Format Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install ruff
+        run: pip install ruff==0.3.2
+      - name: Check formatting
+        run: ruff format --check backend/ cli/
+
+  backend-lint:
+    name: "Backend / Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install ruff
+        run: pip install ruff==0.3.2
+      - name: Run linter
+        run: ruff check backend/ cli/
+
+  backend-typecheck:
+    name: "Backend / Type Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install mypy==1.9.0
+      - name: Run mypy
+        run: mypy backend/ cli/
+
+  backend-unit-tests:
+    name: "Backend / Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run unit tests
+        run: pytest backend/tests/unit -ra -q --tb=short
+
+  backend-integration-tests:
+    name: "Backend / Integration Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install alembic==1.13.1
+      - name: Run integration tests
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///test_armserve.db"
+          APP_ENV: "test"
+        run: pytest backend/tests/integration -ra -q --tb=short
+
+  # ─── Frontend Checks ────────────────────────────────────────────────
+  frontend-lint:
+    name: "Frontend / Lint"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+
+  frontend-tests:
+    name: "Frontend / Tests"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Vitest
+        run: npm run test
+
+  frontend-build:
+    name: "Frontend / Build"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build production bundle
+        run: npm run build
+
+  # ─── Infrastructure Checks ──────────────────────────────────────────
+  infra-format:
+    name: "Infra / Terraform Format"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive infra/
+
+  infra-validate:
+    name: "Infra / Terraform Validate"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, staging, production]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+      - name: Terraform init (${{ matrix.environment }})
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform init -backend=false
+      - name: Terraform validate (${{ matrix.environment }})
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform validate
+
+  # ─── Security Checks ────────────────────────────────────────────────
+  secret-scanning:
+    name: "Security / Secret Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz | tar xz
+          chmod +x gitleaks
+          sudo mv gitleaks /usr/local/bin/
+      - name: Run gitleaks
+        run: gitleaks detect --source . --verbose --no-git
+
+  dependency-audit:
+    name: "Security / Dependency Audit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Python dependency audit (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-* || true
+      - name: Node dependency audit
+        working-directory: frontend
+        run: npm audit --audit-level=high || true
+
+  # ─── Status Gate ─────────────────────────────────────────────────────
+  ci-status:
+    name: "CI Status Gate"
+    if: always()
+    needs:
+      - backend-format
+      - backend-lint
+      - backend-typecheck
+      - backend-unit-tests
+      - backend-integration-tests
+      - frontend-lint
+      - frontend-tests
+      - frontend-build
+      - infra-format
+      - infra-validate
+      - secret-scanning
+      - dependency-audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required job results
+        run: |
+          echo "backend-format: ${{ needs.backend-format.result }}"
+          echo "backend-lint: ${{ needs.backend-lint.result }}"
+          echo "backend-typecheck: ${{ needs.backend-typecheck.result }}"
+          echo "backend-unit-tests: ${{ needs.backend-unit-tests.result }}"
+          echo "backend-integration-tests: ${{ needs.backend-integration-tests.result }}"
+          echo "frontend-lint: ${{ needs.frontend-lint.result }}"
+          echo "frontend-tests: ${{ needs.frontend-tests.result }}"
+          echo "frontend-build: ${{ needs.frontend-build.result }}"
+          echo "infra-format: ${{ needs.infra-format.result }}"
+          echo "infra-validate: ${{ needs.infra-validate.result }}"
+          echo "secret-scanning: ${{ needs.secret-scanning.result }}"
+          echo "dependency-audit: ${{ needs.dependency-audit.result }}"
+
+          # Fail if ANY required check failed
+          if [[ \
+            "${{ needs.backend-format.result }}" == "failure" || \
+            "${{ needs.backend-lint.result }}" == "failure" || \
+            "${{ needs.backend-typecheck.result }}" == "failure" || \
+            "${{ needs.backend-unit-tests.result }}" == "failure" || \
+            "${{ needs.backend-integration-tests.result }}" == "failure" || \
+            "${{ needs.frontend-lint.result }}" == "failure" || \
+            "${{ needs.frontend-tests.result }}" == "failure" || \
+            "${{ needs.frontend-build.result }}" == "failure" || \
+            "${{ needs.infra-format.result }}" == "failure" || \
+            "${{ needs.infra-validate.result }}" == "failure" || \
+            "${{ needs.secret-scanning.result }}" == "failure" \
+          ]]; then
+            echo "::error::One or more required CI checks failed."
+            exit 1
+          fi
+
+          echo "All required CI checks passed."

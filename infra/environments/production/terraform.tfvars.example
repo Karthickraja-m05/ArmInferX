@@ -1,0 +1,15 @@
+# ArmServe Production Environment Terraform Variables Example
+aws_region             = "us-east-1"
+project_name           = "armserve"
+environment            = "production"
+vpc_cidr               = "10.0.0.0/16"
+availability_zones     = ["us-east-1a", "us-east-1b", "us-east-1c"]
+graviton_instance_type = "c7g.2xlarge"
+alert_email            = "ops-alerts@armserve.com"
+
+tags = {
+  Project     = "ArmServe"
+  Environment = "production"
+  ManagedBy   = "Terraform"
+  Repository  = "ArmInferX"
+}

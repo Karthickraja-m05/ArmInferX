@@ -1,0 +1,15 @@
+# ArmServe Dev Environment Terraform Variables Example
+aws_region             = "us-east-1"
+project_name           = "armserve"
+environment            = "dev"
+vpc_cidr               = "10.10.0.0/16"
+availability_zones     = ["us-east-1a", "us-east-1b"]
+graviton_instance_type = "t4g.medium"
+alert_email            = "dev-alerts@armserve.local"
+
+tags = {
+  Project     = "ArmServe"
+  Environment = "dev"
+  ManagedBy   = "Terraform"
+  Repository  = "ArmInferX"
+}
