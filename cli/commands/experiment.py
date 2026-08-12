@@ -9,7 +9,7 @@ from cli.formatting import get_console, print_error, print_json_output
 
 experiment_app = typer.Typer(
     name="experiment",
-    help="Generate, execute, and track parameter optimization experiments.",
+    help="Generate, execute, schedule, and track parameter optimization experiments.",
 )
 
 
@@ -72,6 +72,76 @@ def experiment_generate(
 
     except Exception as err:
         print_error(f"Failed to generate experiment configurations: {err}")
+        raise typer.Exit(code=1) from err
+
+
+@experiment_app.command(name="schedule", help="Enqueue experiment configurations into execution queue.")
+def experiment_schedule(
+    configs: list[str] = typer.Argument(..., help="Config IDs to schedule."),
+    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
+) -> None:
+    """Enqueue experiment configurations into execution queue."""
+    target_url = f"{url.rstrip('/')}/experiments/schedule"
+
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            res = client.post(target_url, json=configs)
+            res.raise_for_status()
+            data = res.json()
+
+        if json_output:
+            print_json_output(data)
+            return
+
+        console = get_console()
+        console.print(f"[bold green]Successfully enqueued {data.get('enqueued_count')} configuration(s).[/bold green]")
+        for cid in data.get("enqueued_configs", []):
+            console.print(f"  • {cid}", style="yellow")
+
+    except Exception as err:
+        print_error(f"Scheduling failed: {err}")
+        raise typer.Exit(code=1) from err
+
+
+@experiment_app.command(name="status", help="Get real-time experiment scheduler queue status.")
+def experiment_status(
+    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
+) -> None:
+    """Get real-time experiment scheduler queue status."""
+    target_url = f"{url.rstrip('/')}/experiments/scheduler/status"
+
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            res = client.get(target_url)
+            res.raise_for_status()
+            data = res.json()
+
+        if json_output:
+            print_json_output(data)
+            return
+
+        console = get_console()
+        table = Table(title="ArmServe Experiment Scheduler Queue Status", title_style="bold blue", show_header=True)
+        table.add_column("Property", style="cyan")
+        table.add_column("Value", style="bold white")
+
+        table.add_row("Queue Status", str(data.get("queue_status")))
+        table.add_row("Active Experiment", str(data.get("current_experiment") or "None"))
+        table.add_row("Pending Queue Count", str(data.get("pending_count")))
+        table.add_row("Completed Count", f"[bold green]{data.get('completed_count')}[/bold green]")
+        table.add_row("Failed Count", f"[bold red]{data.get('failed_count')}[/bold red]")
+
+        console.print(table)
+        events = data.get("recent_events", [])
+        if events:
+            console.print("\nRecent Scheduling Events:")
+            for ev in events:
+                console.print(f"  {ev}", style="dim")
+
+    except Exception as err:
+        print_error(f"Failed to fetch scheduler status: {err}")
         raise typer.Exit(code=1) from err
 
 

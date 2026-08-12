@@ -1,4 +1,4 @@
-"""Optimization Experiment Execution & Configuration REST API Router."""
+"""Optimization Experiment Execution, Scheduling & Configuration REST API Router."""
 
 import json
 from pathlib import Path
@@ -6,7 +6,7 @@ import time
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, status
 import structlog
 
 from backend.app.services.experiment_executor import EXPERIMENT_RUNS_DIR, ExperimentExecutor, ExperimentRunRecord
@@ -16,6 +16,7 @@ from backend.app.services.experiment_generator import (
     ExperimentConfigRecord,
     ParameterRangeSpec,
 )
+from backend.app.services.experiment_scheduler import SchedulerStatusResponse, experiment_scheduler
 
 logger = structlog.get_logger("backend.app.api.v1.experiments")
 
@@ -61,6 +62,27 @@ async def generate_experiment_configs(spec: ParameterRangeSpec) -> list[Experime
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate configurations: {err}",
         ) from err
+
+
+@router.post("/experiments/schedule", response_model=dict, operation_id="schedule_experiments_direct")
+@router.post("/api/v1/experiments/schedule", response_model=dict, operation_id="schedule_experiments_api_v1")
+async def schedule_experiments(config_ids: list[str], background_tasks: BackgroundTasks) -> dict:
+    """Enqueue experiment configurations for background execution."""
+    enqueued = experiment_scheduler.enqueue_configurations(config_ids)
+    background_tasks.add_task(experiment_scheduler.process_queue)
+    return {
+        "status": "enqueued",
+        "enqueued_count": len(enqueued),
+        "enqueued_configs": enqueued,
+        "scheduler_status": experiment_scheduler.get_status().model_dump(),
+    }
+
+
+@router.get("/experiments/scheduler/status", response_model=SchedulerStatusResponse, operation_id="get_scheduler_status_direct")
+@router.get("/api/v1/experiments/scheduler/status", response_model=SchedulerStatusResponse, operation_id="get_scheduler_status_api_v1")
+async def get_scheduler_status() -> SchedulerStatusResponse:
+    """Retrieve real-time queue status, pending count, completed/failed counts."""
+    return experiment_scheduler.get_status()
 
 
 @router.post("/experiments/execute", response_model=ExperimentRunRecord, operation_id="execute_experiment_direct")
