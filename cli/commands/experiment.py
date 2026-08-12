@@ -9,7 +9,7 @@ from cli.formatting import get_console, print_error, print_json_output
 
 experiment_app = typer.Typer(
     name="experiment",
-    help="Generate, execute, schedule, and track parameter optimization experiments.",
+    help="Generate, execute, schedule, score, rank, and track parameter optimization experiments.",
 )
 
 
@@ -101,6 +101,68 @@ def experiment_schedule(
 
     except Exception as err:
         print_error(f"Scheduling failed: {err}")
+        raise typer.Exit(code=1) from err
+
+
+@experiment_app.command(name="rank", help="Evaluate SLA constraints, score, and rank top configurations.")
+def experiment_rank(
+    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    max_latency: float = typer.Option(None, "--max-latency", help="Max allowed P50 latency (ms)."),
+    min_rps: float = typer.Option(None, "--min-rps", help="Min required RPS throughput."),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
+) -> None:
+    """Evaluate SLA constraints, score, and rank top configurations."""
+    target_url = f"{url.rstrip('/')}/experiments/evaluate"
+
+    payload = {}
+    if max_latency or min_rps:
+        payload["constraints"] = {}
+        if max_latency:
+            payload["constraints"]["max_latency_p50_ms"] = max_latency
+        if min_rps:
+            payload["constraints"]["min_throughput_rps"] = min_rps
+
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            res = client.post(target_url, json=payload if payload else None)
+            res.raise_for_status()
+            data = res.json()
+
+        if json_output:
+            print_json_output(data)
+            return
+
+        console = get_console()
+        table = Table(title=f"ArmServe Top Ranked Configurations ({data.get('ranking_id')})", title_style="bold gold1", show_header=True)
+        table.add_column("Rank", style="bold cyan")
+        table.add_column("Config ID", style="bold yellow")
+        table.add_column("Score", style="bold green")
+        table.add_column("SLA Valid", style="magenta")
+        table.add_column("Threads", style="white")
+        table.add_column("Batch Size", style="dim")
+        table.add_column("P50 Latency", style="cyan")
+        table.add_column("Throughput", style="bold white")
+
+        for item in data.get("top_configurations", []):
+            cfg = item.get("configuration") or {}
+            metrics = item.get("metrics_summary") or {}
+            comp_str = "[bold green]YES[/bold green]" if item.get("is_compliant") else "[bold red]NO[/bold red]"
+            table.add_row(
+                str(item.get("rank")),
+                str(item.get("config_id")),
+                f"{item.get('score'):.2f}",
+                comp_str,
+                str(cfg.get("thread_count", "N/A")),
+                str(cfg.get("batch_size", "N/A")),
+                f"{metrics.get('latency_p50_ms', 'N/A')} ms",
+                f"{metrics.get('requests_per_second', 'N/A')} req/s",
+            )
+
+        console.print(table)
+        console.print(f"\nEvaluated [bold]{data.get('total_evaluated')}[/bold] run(s). Compliant: [bold green]{data.get('compliant_count')}[/bold green], Rejected: [bold red]{data.get('rejected_count')}[/bold red].")
+
+    except Exception as err:
+        print_error(f"Ranking failed: {err}")
         raise typer.Exit(code=1) from err
 
 

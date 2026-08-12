@@ -1,4 +1,4 @@
-"""Optimization Experiment Execution, Scheduling & Configuration REST API Router."""
+"""Optimization Experiment Execution, Scheduling, Scoring & Configuration REST API Router."""
 
 import json
 from pathlib import Path
@@ -9,6 +9,8 @@ from uuid import uuid4
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, status
 import structlog
 
+from backend.app.services.configuration_ranker import RANKINGS_DIR, ConfigurationRanker, RankingReport
+from backend.app.services.constraint_engine import ConstraintSpec
 from backend.app.services.experiment_executor import EXPERIMENT_RUNS_DIR, ExperimentExecutor, ExperimentRunRecord
 from backend.app.services.experiment_generator import (
     CONFIGS_DIR,
@@ -17,10 +19,15 @@ from backend.app.services.experiment_generator import (
     ParameterRangeSpec,
 )
 from backend.app.services.experiment_scheduler import SchedulerStatusResponse, experiment_scheduler
+from backend.app.services.scoring_engine import ObjectiveWeights
 
 logger = structlog.get_logger("backend.app.api.v1.experiments")
 
 router = APIRouter(tags=["Experiments"])
+
+
+class EvaluateRequest(BaseModel if False else dict):
+    pass
 
 
 @router.post("/experiments", status_code=status.HTTP_201_CREATED, response_model=dict, operation_id="create_experiment_direct")
@@ -83,6 +90,35 @@ async def schedule_experiments(config_ids: list[str], background_tasks: Backgrou
 async def get_scheduler_status() -> SchedulerStatusResponse:
     """Retrieve real-time queue status, pending count, completed/failed counts."""
     return experiment_scheduler.get_status()
+
+
+@router.post("/experiments/evaluate", response_model=RankingReport, operation_id="evaluate_experiments_direct")
+@router.post("/api/v1/experiments/evaluate", response_model=RankingReport, operation_id="evaluate_experiments_api_v1")
+async def evaluate_experiments(
+    constraints: Optional[ConstraintSpec] = None,
+    weights: Optional[ObjectiveWeights] = None,
+    top_n: int = Query(10, ge=1, le=100),
+) -> RankingReport:
+    """Evaluate all historical experiment runs with scoring, SLA constraint checking, and ranking."""
+    runs = ExperimentExecutor.list_experiments()
+    ranker = ConfigurationRanker()
+    return ranker.rank_experiment_runs(runs, constraint_spec=constraints, weights=weights, top_n=top_n)
+
+
+@router.get("/experiments/rankings", response_model=list[dict], operation_id="list_rankings_direct")
+@router.get("/api/v1/experiments/rankings", response_model=list[dict], operation_id="list_rankings_api_v1")
+async def list_rankings() -> list[dict]:
+    """Retrieve persisted configuration ranking reports."""
+    RANKINGS_DIR.mkdir(parents=True, exist_ok=True)
+    reports = []
+    for f_path in RANKINGS_DIR.glob("*.json"):
+        try:
+            with open(f_path, encoding="utf-8") as f:
+                reports.append(json.load(f))
+        except Exception:
+            pass
+    reports.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    return reports
 
 
 @router.post("/experiments/execute", response_model=ExperimentRunRecord, operation_id="execute_experiment_direct")
