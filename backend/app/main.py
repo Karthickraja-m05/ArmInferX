@@ -20,7 +20,7 @@ from backend.app.core.errors import (
     validation_exception_handler,
 )
 from backend.app.core.logging import configure_logging, logger
-from backend.app.core.middleware import RequestLoggingMiddleware
+from backend.app.core.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
 
 
 @asynccontextmanager
@@ -54,16 +54,25 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Security Headers Middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Custom Request Logging Middleware
 app.add_middleware(RequestLoggingMiddleware)
 
-# CORS Middleware
+# CORS Middleware (Restricted origins in non-debug mode)
+cors_origins = (
+    ["*"]
+    if settings.app.debug
+    else ["http://localhost:3000", "http://localhost:5173", "https://app.armserve.io"]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Request-ID"],
 )
 
 # Global Exception Handlers for Structured Error Responses

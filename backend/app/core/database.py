@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from backend.app.core.config import settings
+from backend.app.core.metrics import metrics_collector
 
 
 def get_engine_kwargs(url: str) -> dict[str, Any]:
@@ -115,7 +116,16 @@ async def check_database_health() -> dict[str, Any]:
         async with AsyncSessionLocal() as session:
             result = await session.execute(text("SELECT 1"))
             val = result.scalar()
-            latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            duration_sec = time.perf_counter() - start_time
+            latency_ms = round(duration_sec * 1000, 2)
+            db_status = "healthy" if val == 1 else "unhealthy"
+
+            # Record database operation metrics
+            metrics_collector.record_db_operation(
+                operation="health_check",
+                status="success" if db_status == "healthy" else "failure",
+                duration_seconds=duration_sec,
+            )
 
             pool_info: dict[str, Any] = {}
             if hasattr(engine.pool, "size"):
@@ -127,13 +137,22 @@ async def check_database_health() -> dict[str, Any]:
                 }
 
             return {
-                "status": "healthy" if val == 1 else "unhealthy",
+                "status": db_status,
                 "database_dialect": engine.dialect.name,
                 "latency_ms": latency_ms,
                 "pool_info": pool_info,
             }
     except Exception as exc:
-        latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+        duration_sec = time.perf_counter() - start_time
+        latency_ms = round(duration_sec * 1000, 2)
+
+        # Record failed DB operation metric
+        metrics_collector.record_db_operation(
+            operation="health_check",
+            status="error",
+            duration_seconds=duration_sec,
+        )
+
         return {
             "status": "unhealthy",
             "database_dialect": engine.dialect.name if engine else "unknown",

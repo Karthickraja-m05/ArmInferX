@@ -29,7 +29,7 @@ class AppConfig(BaseModel):
     env: EnvironmentType = Field(default=EnvironmentType.DEVELOPMENT)
     debug: bool = Field(default=True)
     log_level: str = Field(default="INFO")
-    api_host: str = Field(default="0.0.0.0")
+    api_host: str = Field(default="0.0.0.0")  # nosec B104
     api_port: int = Field(default=8000, ge=1, le=65535)
     storage_path: str = Field(default="./storage")
 

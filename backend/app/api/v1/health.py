@@ -4,10 +4,12 @@ import platform
 import sys
 
 from fastapi import APIRouter, Depends, status
+from fastapi.responses import PlainTextResponse
 
 from backend.app.core.config import ArmServeSettings
 from backend.app.core.database import check_database_health
 from backend.app.core.dependencies import get_settings
+from backend.app.core.metrics import metrics_collector
 from backend.app.schemas.system import (
     ConfigValidationRequest,
     ConfigValidationResponse,
@@ -120,3 +122,16 @@ async def validate_current_system_config(
 ) -> ConfigValidationResponse:
     """Validate currently loaded system settings."""
     return await validate_system_config(body=None, app_settings=app_settings)
+
+
+@router.get(
+    "/metrics",
+    response_class=PlainTextResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Application Metrics Endpoint",
+    description="Returns Prometheus exposition format metrics originating from actual application execution.",
+)
+async def get_system_metrics() -> PlainTextResponse:
+    """Return standard Prometheus text format application metrics."""
+    content = metrics_collector.generate_prometheus_text()
+    return PlainTextResponse(content=content, media_type="text/plain; version=0.0.4")

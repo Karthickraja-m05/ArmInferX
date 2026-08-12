@@ -1,4 +1,4 @@
-"""Structured HTTP request logging middleware for FastAPI."""
+"""Structured HTTP request logging, security headers, and metrics collection middleware for FastAPI."""
 
 import time
 import uuid
@@ -8,11 +8,31 @@ import structlog
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from backend.app.core.metrics import metrics_collector
+
 logger = structlog.get_logger("backend.app.api.access")
 
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware enforcing secure HTTP headers across all API responses."""
+
+    async def dispatch(  # type: ignore[override]
+        self, request: Request, call_next: Callable[[Request], Response]
+    ) -> Response:
+        response: Response = await call_next(request)  # type: ignore[misc]
+
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+        return response
+
+
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware for measuring request duration and outputting structured JSON logs."""
+    """Middleware for request correlation, latency measurement, and metrics collection."""
 
     async def dispatch(  # type: ignore[override]
         self, request: Request, call_next: Callable[[Request], Response]
@@ -33,10 +53,19 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         try:
             response: Response = await call_next(request)  # type: ignore[misc]
-            process_time_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            duration_seconds = time.perf_counter() - start_time
+            process_time_ms = round(duration_seconds * 1000, 2)
 
             response.headers["X-Request-ID"] = request_id
             response.headers["X-Process-Time-Ms"] = str(process_time_ms)
+
+            # Record real application metrics
+            metrics_collector.record_request(
+                method=request.method,
+                endpoint=request.url.path,
+                status_code=response.status_code,
+                duration_seconds=duration_seconds,
+            )
 
             logger.info(
                 "HTTP Request Completed",
@@ -45,10 +74,27 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             )
             return response
         except Exception as exc:
-            process_time_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            duration_seconds = time.perf_counter() - start_time
+            process_time_ms = round(duration_seconds * 1000, 2)
+
+            # Record error metrics
+            err_type = type(exc).__name__
+            metrics_collector.record_error(
+                error_type=err_type,
+                status_code=500,
+                endpoint=request.url.path,
+            )
+            metrics_collector.record_request(
+                method=request.method,
+                endpoint=request.url.path,
+                status_code=500,
+                duration_seconds=duration_seconds,
+            )
+
             logger.error(
                 "HTTP Request Failed",
                 error=str(exc),
+                error_type=err_type,
                 process_time_ms=process_time_ms,
                 exc_info=True,
             )

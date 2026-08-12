@@ -1,16 +1,50 @@
-"""Structured logging configuration using structlog."""
+"""Structured logging configuration using structlog with automatic credential masking."""
 
 import logging
 import sys
-from typing import cast
+from collections.abc import MutableMapping
+from typing import Any, cast
 
 import structlog
 from structlog.typing import Processor
 
 from backend.app.core.config import settings
 
+SENSITIVE_KEYWORDS = {
+    "password",
+    "pass",
+    "secret",
+    "secret_key",
+    "api_key",
+    "apikey",
+    "token",
+    "access_token",
+    "refresh_token",
+    "auth",
+    "authorization",
+    "x-api-key",
+    "access_key",
+    "aws_secret_access_key",
+    "credentials",
+    "bearer",
+}
+
+
+def mask_sensitive_data(
+    logger: Any, method_name: str, event_dict: MutableMapping[str, Any]
+) -> MutableMapping[str, Any]:
+    """Structlog processor that redacts passwords, tokens, API keys, and credentials."""
+    for key, val in list(event_dict.items()):
+        key_lower = key.lower()
+        if any(keyword in key_lower for keyword in SENSITIVE_KEYWORDS):
+            event_dict[key] = "********"
+        elif isinstance(val, MutableMapping):
+            event_dict[key] = mask_sensitive_data(logger, method_name, val)
+    return event_dict
+
 
 def configure_logging() -> None:
+    """Configure global structlog and standard logging settings."""
     log_level = getattr(logging, settings.app.log_level.upper(), logging.INFO)
 
     logging.basicConfig(
@@ -33,6 +67,7 @@ def configure_logging() -> None:
             structlog.processors.StackInfoRenderer(),
             structlog.dev.set_exc_info,
             structlog.processors.TimeStamper(fmt="iso"),
+            mask_sensitive_data,
             renderer,
         ],
         wrapper_class=structlog.make_filtering_bound_logger(log_level),

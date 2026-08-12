@@ -1,12 +1,13 @@
-"""Root-level health and readiness API router."""
+"""Root-level health, readiness, and Prometheus metrics API router."""
 
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Response, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from backend.app.core.config import settings
 from backend.app.core.database import check_database_health
+from backend.app.core.metrics import metrics_collector
 from backend.app.schemas.system import HealthResponse, ReadinessResponse
 
 router = APIRouter(tags=["System Status"])
@@ -61,3 +62,16 @@ async def get_root_readiness(response: Response) -> ReadinessResponse | JSONResp
         )
 
     return readiness
+
+
+@router.get(
+    "/metrics",
+    response_class=PlainTextResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Prometheus Application Metrics",
+    description="Exposes real application performance, request counts, latency histograms, and error metrics in Prometheus exposition text format.",
+)
+async def get_prometheus_metrics() -> PlainTextResponse:
+    """Return standard Prometheus exposition text format metrics originating from actual application execution."""
+    content = metrics_collector.generate_prometheus_text()
+    return PlainTextResponse(content=content, media_type="text/plain; version=0.0.4")
