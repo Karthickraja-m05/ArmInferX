@@ -77,9 +77,39 @@ class ExperimentExecutor:
         settings.runtime.temperature = config.temperature
         settings.runtime.max_tokens = config.max_tokens
 
-    async def execute_experiment(self, config_id: str, warmup_iterations: int = 2, benchmark_iterations: int = 5) -> ExperimentRunRecord:
+    async def execute_experiment(
+        self,
+        config_id: str | None = None,
+        config: dict[str, Any] | ExperimentConfigRecord | None = None,
+        warmup_iterations: int = 2,
+        benchmark_iterations: int = 5,
+        runtime_version: str = "1.0.0-arm64",
+    ) -> ExperimentRunRecord:
         """Execute complete optimization experiment pipeline with automatic retry."""
-        config = self.load_config(config_id)
+        if config is not None:
+            if isinstance(config, dict):
+                c_dict = dict(config)
+                if "created_at" not in c_dict:
+                    c_dict["created_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+                if "hash_signature" not in c_dict:
+                    import hashlib
+                    c_dict["hash_signature"] = hashlib.sha256(str(c_dict).encode()).hexdigest()[:16]
+                if "config_id" not in c_dict:
+                    c_dict["config_id"] = f"cfg-{c_dict['hash_signature'][:10]}"
+                cfg_obj = ExperimentConfigRecord(**c_dict)
+                # Persist config file
+                CONFIGS_DIR.mkdir(parents=True, exist_ok=True)
+                with open(CONFIGS_DIR / f"{cfg_obj.config_id}.json", "w", encoding="utf-8") as f:
+                    f.write(cfg_obj.model_dump_json(indent=2))
+                config_record = cfg_obj
+            else:
+                config_record = config
+        elif config_id is not None:
+            config_record = self.load_config(config_id)
+        else:
+            raise ValueError("Either config_id or config must be provided to execute_experiment.")
+
+        config = config_record
         exp_id = f"exp-{int(time.time())}"
         start_time_str = time.strftime("%Y-%m-%dT%H:%M:%SZ")
 

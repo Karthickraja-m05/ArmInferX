@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter
 
+from backend.app.api.v1.agent import router as agent_router
 from backend.app.api.v1.benchmarks import router as benchmarks_router
 from backend.app.api.v1.experiments import router as experiments_router
 from backend.app.api.v1.health import router as health_router
@@ -18,3 +19,4 @@ api_v1_router.include_router(openai_router)
 api_v1_router.include_router(benchmarks_router)
 api_v1_router.include_router(optimization_router)
 api_v1_router.include_router(quality_router)
+api_v1_router.include_router(agent_router)
