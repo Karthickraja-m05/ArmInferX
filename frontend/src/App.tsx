@@ -1,10 +1,14 @@
 import { AppShell } from './components/layout/AppShell';
 import { OverviewPage } from './pages/OverviewPage';
-import { ModelsPage } from './pages/ModelsPage';
+import { BenchmarksPage } from './pages/BenchmarksPage';
 import { ExperimentsPage } from './pages/ExperimentsPage';
-import { DeploymentsPage } from './pages/DeploymentsPage';
 import { OptimizationPage } from './pages/OptimizationPage';
-import { SystemPage } from './pages/SystemPage';
+import { QualityPage } from './pages/QualityPage';
+import { CostPage } from './pages/CostPage';
+import { DeploymentsPage } from './pages/DeploymentsPage';
+import { AgentPage } from './pages/AgentPage';
+import { PerformixPage } from './pages/PerformixPage';
+import { SettingsPage } from './pages/SettingsPage';
 import './App.css';
 
 export function App() {
@@ -14,16 +18,24 @@ export function App() {
         switch (activeTab) {
           case 'overview':
             return <OverviewPage />;
-          case 'models':
-            return <ModelsPage />;
+          case 'benchmarks':
+            return <BenchmarksPage />;
           case 'experiments':
             return <ExperimentsPage />;
-          case 'deployments':
-            return <DeploymentsPage />;
           case 'optimization':
             return <OptimizationPage />;
-          case 'system':
-            return <SystemPage />;
+          case 'quality':
+            return <QualityPage />;
+          case 'cost':
+            return <CostPage />;
+          case 'deployments':
+            return <DeploymentsPage />;
+          case 'agent':
+            return <AgentPage />;
+          case 'performix':
+            return <PerformixPage />;
+          case 'settings':
+            return <SettingsPage />;
           default:
             return <OverviewPage />;
         }
@@ -31,5 +43,6 @@ export function App() {
     </AppShell>
   );
 }
+
 
 export default App;

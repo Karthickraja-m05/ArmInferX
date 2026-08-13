@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="100%" height="100%" style="background-color: #0b0f19;">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="armGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0091ff"/>
+      <stop offset="100%" stop-color="#00d2ff"/>
+    </linearGradient>
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Title Banner -->
+  <text x="500" y="45" font-family="Inter, Roboto, sans-serif" font-size="24" font-weight="bold" fill="#f8fafc" text-anchor="middle">ArmServe System Architecture</text>
+  <text x="500" y="70" font-family="Inter, Roboto, sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">Autonomous Cloud AI Inference Optimization on AWS Graviton3 (ARM64)</text>
+
+  <!-- Flow Boxes -->
+
+  <!-- Box 1: AWS Graviton ARM64 -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="100" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#0091ff" stroke-width="2"/>
+    <text x="500" y="136" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#00d2ff" text-anchor="middle">AWS Graviton ARM64 (c7g.2xlarge Neoverse V1 SIMD)</text>
+  </g>
+  
+  <path d="M 500 160 L 500 185" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Box 2: Inference Runtime -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="185" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#334155" stroke-width="1.5"/>
+    <text x="500" y="221" font-family="Inter, Roboto, sans-serif" font-size="15" font-weight="bold" fill="#f1f5f9" text-anchor="middle">Inference Runtime (llama.cpp GGUF / ONNX Runtime MLAS)</text>
+  </g>
+
+  <path d="M 500 245 L 500 270" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Box 3: Benchmark Engine -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="270" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#334155" stroke-width="1.5"/>
+    <text x="500" y="306" font-family="Inter, Roboto, sans-serif" font-size="15" font-weight="bold" fill="#f1f5f9" text-anchor="middle">Benchmark Engine (TTFT, P50/P90/P99 Latency, Throughput, CPU/RAM)</text>
+  </g>
+
+  <path d="M 500 330 L 500 355" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Box 4: Experiment Engine -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="355" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#334155" stroke-width="1.5"/>
+    <text x="500" y="391" font-family="Inter, Roboto, sans-serif" font-size="15" font-weight="bold" fill="#f1f5f9" text-anchor="middle">Experiment Engine (12-Trial Hyperparameter Sweep Grid)</text>
+  </g>
+
+  <path d="M 500 415 L 500 440" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Box 5: Optimization Engine -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="440" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#a855f7" stroke-width="2"/>
+    <text x="500" y="476" font-family="Inter, Roboto, sans-serif" font-size="15" font-weight="bold" fill="#c084fc" text-anchor="middle">Optimization Engine (Optuna TPE Multi-Objective Pareto Ranker)</text>
+  </g>
+
+  <path d="M 500 500 L 500 525" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Box 6: Quality + Cost -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="525" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="500" y="561" font-family="Inter, Roboto, sans-serif" font-size="15" font-weight="bold" fill="#4ade80" text-anchor="middle">Quality Guardrails (&gt;95% SLA) + Cost Modeler ($0.062 / M Tokens)</text>
+  </g>
+
+  <path d="M 500 585 L 500 610" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Box 7: Optimization Agent & Deployment -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="610" width="800" height="60" rx="10" fill="url(#boxGrad)" stroke="#eab308" stroke-width="2"/>
+    <text x="500" y="646" font-family="Inter, Roboto, sans-serif" font-size="15" font-weight="bold" fill="#fde047" text-anchor="middle">Optimization Agent &amp; Atomic Zero-Downtime Deployment</text>
+  </g>
+</svg>

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.models.base import Base
@@ -24,6 +24,13 @@ class DeploymentRecord(Base):
     endpoint_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     replicas: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     configuration: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+    deployment_version: Mapped[str] = mapped_column(String(50), nullable=False, default="v1.0.0", index=True)
+    runtime_version: Mapped[str] = mapped_column(String(50), nullable=False, default="1.0.0-arm64")
+    config_version: Mapped[str] = mapped_column(String(50), nullable=False, default="cfg-v1")
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    health_status: Mapped[str] = mapped_column(String(50), nullable=False, default="HEALTHY")
+    metrics_summary: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
 
     model_version: Mapped["ModelVersionRecord"] = relationship(
         "ModelVersionRecord", back_populates="deployments"

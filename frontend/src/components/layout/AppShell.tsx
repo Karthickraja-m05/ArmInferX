@@ -8,29 +8,46 @@ interface AppShellProps {
 
 const TAB_TITLES: Record<NavTab, { title: string; subtitle: string }> = {
   overview: {
-    title: 'Platform Overview',
-    subtitle: 'Autonomous AI Inference Optimization Platform for Arm64 Infrastructure',
+    title: 'Platform System Overview',
+    subtitle: 'Autonomous AI Inference Optimization Platform for AWS ARM64 Graviton Infrastructure',
   },
-  models: {
-    title: 'Model Registry',
-    subtitle: 'Manage and register AI models optimized for Arm Neoverse runtimes',
+  benchmarks: {
+    title: 'Benchmark & Experiment Telemetry',
+    subtitle: 'Latency trends, TTFT, throughput, CPU & RAM footprint telemetry',
   },
   experiments: {
     title: 'Optimization Experiments',
-    subtitle: 'Search spaces, hardware targets, and latency budget constraints',
+    subtitle: 'Search spaces, hardware targets, trial execution, and budget constraints',
   },
   optimization: {
-    title: 'Autonomous Tuning Engine',
-    subtitle: 'Bayesian & TPE trial execution status across target infrastructure',
+    title: 'Optimization Analytics & Pareto Frontier',
+    subtitle: 'Multi-objective ranking, performance gain, and constraint rejection rationale',
+  },
+  quality: {
+    title: 'Quality Evaluation & Semantic Scoring',
+    subtitle: 'BLEU, ROUGE-L, and cosine semantic similarity non-degradation verification',
+  },
+  cost: {
+    title: 'AWS Graviton3 Cost Analytics',
+    subtitle: 'Cost per 1M tokens, monthly spend projections, and x86 hardware comparison',
   },
   deployments: {
-    title: 'Inference Deployments',
-    subtitle: 'Active model serving endpoints and replica scaling',
+    title: 'Inference Deployment Monitoring',
+    subtitle: '5-stage health verification, active deployments, and automated zero-downtime rollback',
   },
-  system: {
-    title: 'System Diagnostics',
-    subtitle: 'Environment configuration, platform runtime, and database connection metrics',
+  agent: {
+    title: 'Autonomous Optimization Agent Activity',
+    subtitle: 'Live workflow states, observation cycles, optimization plans, and decision audit logs',
   },
+  performix: {
+    title: 'Arm Performix Official Integration & Evidence',
+    subtitle: 'Official Arm benchmark suite correlation, hardware metrics, and hackathon submission evidence',
+  },
+  settings: {
+    title: 'System Settings & Diagnostics',
+    subtitle: 'Pydantic configuration schema validation, environment variables, and connection pool metrics',
+  },
+
 };
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {

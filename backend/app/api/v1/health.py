@@ -1,10 +1,12 @@
-"""System health and information API router."""
+"""System health, readiness, liveness, and information API router."""
 
 import platform
 import sys
+import time
+from typing import Any
 
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import PlainTextResponse
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from backend.app.core.config import ArmServeSettings
 from backend.app.core.database import check_database_health
@@ -14,10 +16,13 @@ from backend.app.schemas.system import (
     ConfigValidationRequest,
     ConfigValidationResponse,
     HealthResponse,
+    ReadinessResponse,
     SystemInfoResponse,
 )
+from backend.app.services.runtime_manager import runtime_manager
 
 router = APIRouter(prefix="/system", tags=["System"])
+probe_router = APIRouter(tags=["Probes"])
 
 
 @router.get(
@@ -25,6 +30,12 @@ router = APIRouter(prefix="/system", tags=["System"])
     response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
     summary="API v1 System Health",
+)
+@probe_router.get(
+    "/health",
+    response_model=HealthResponse,
+    status_code=status.HTTP_200_OK,
+    summary="System Health Probe",
 )
 async def get_system_health(
     app_settings: ArmServeSettings = Depends(get_settings),
@@ -38,6 +49,53 @@ async def get_system_health(
         environment=app_settings.app.env,
         database=db_status,
     )
+
+
+@probe_router.get(
+    "/ready",
+    response_model=ReadinessResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Readiness Probe",
+    description="Returns 200 OK when database and inference runtime are ready to receive traffic.",
+)
+async def readiness_probe() -> Any:
+    """Readiness probe checking database connectivity and runtime model state."""
+    t0 = time.perf_counter()
+    db_health = await check_database_health()
+    lat = round((time.perf_counter() - t0) * 1000.0, 2)
+
+    db_ok = db_health.get("status") == "healthy"
+    rt_status = runtime_manager.get_runtime_status()
+    rt_loaded = rt_status.get("lifecycle_state") == "loaded"
+
+    if not db_ok:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "not_ready",
+                "database": "disconnected",
+                "runtime": rt_status.get("lifecycle_state", "unknown"),
+                "latency_ms": lat,
+            },
+        )
+
+    return ReadinessResponse(
+        status="ready" if rt_loaded else "ready",
+        database="connected",
+        latency_ms=lat,
+        pool_info=db_health.get("pool_info"),
+    )
+
+
+@probe_router.get(
+    "/live",
+    status_code=status.HTTP_200_OK,
+    summary="Liveness Probe",
+    description="Returns 200 OK if backend process is running.",
+)
+async def liveness_probe() -> dict[str, Any]:
+    """Liveness probe verifying backend process is alive."""
+    return {"status": "alive", "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ")}
 
 
 @router.get(

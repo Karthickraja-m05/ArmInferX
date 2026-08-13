@@ -141,6 +141,8 @@ class ArmServeSettings(BaseSettings):
         env_nested_delimiter="__",
         case_sensitive=False,
         extra="ignore",
+        env_file=".env",
+        env_file_encoding="utf-8",
     )
 
     # Top-level settings maps

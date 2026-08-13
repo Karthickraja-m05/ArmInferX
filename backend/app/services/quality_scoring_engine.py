@@ -218,3 +218,7 @@ class QualityScoringEngine:
 
         logger.info("Completed automated quality evaluation", eval_id=eval_id, score=overall_score, passed=passed)
         return report
+
+
+quality_scoring_engine = QualityScoringEngine()
+

@@ -180,8 +180,39 @@ class InferenceEngine:
                 }
             ],
             "usage": res["usage"],
+            "system_info": res.get("system_info", {}),
         }
+
+    async def generate(
+        self, prompt: str, max_tokens: int = 16, temperature: float = 0.2
+    ) -> "InferenceResult":
+        """Execute async inference generation for health probes."""
+        req = CompletionRequest(
+            prompt=prompt, max_tokens=max_tokens, temperature=temperature
+        )
+        res = self.generate_completion(req)
+        choice_text = res["choices"][0]["text"] if res.get("choices") else ""
+        usage = res.get("usage", {})
+        sys_info = res.get("system_info", {})
+        dur_ms = sys_info.get("generation_time_ms", 10.0)
+        return InferenceResult(
+            completion_tokens=usage.get("completion_tokens", 1),
+            prompt_tokens=usage.get("prompt_tokens", 1),
+            total_tokens=usage.get("total_tokens", 2),
+            output_text=choice_text,
+            duration_ms=dur_ms,
+        )
+
+
+class InferenceResult(BaseModel):
+    completion_tokens: int
+    prompt_tokens: int
+    total_tokens: int
+    output_text: str
+    duration_ms: float
 
 
 # Global engine singleton instance
 engine = InferenceEngine()
+inference_engine = engine
+

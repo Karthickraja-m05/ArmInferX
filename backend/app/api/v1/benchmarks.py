@@ -70,7 +70,21 @@ async def list_benchmarks(
     return manifests[skip : skip + limit]
 
 
+@router.get("/benchmarks/runs", response_model=dict, operation_id="list_benchmark_runs_direct")
+@router.get("/api/v1/benchmarks/runs", response_model=dict, operation_id="list_benchmark_runs_api_v1")
+async def list_benchmark_runs(
+    model_id: Optional[str] = Query(None, description="Filter by model ID"),
+    search: Optional[str] = Query(None, description="Search run_id or environment"),
+    skip: int = Query(0, ge=0, description="Pagination skip offset"),
+    limit: int = Query(50, ge=1, le=500, description="Pagination page limit"),
+) -> dict:
+    """Return benchmark runs dictionary wrapper."""
+    runs = await list_benchmarks(model_id=model_id, search=search, skip=skip, limit=limit)
+    return {"runs": runs}
+
+
 @router.get("/benchmarks/{run_id}", response_model=dict, operation_id="get_benchmark_by_id_direct")
+
 @router.get("/api/v1/benchmarks/{run_id}", response_model=dict, operation_id="get_benchmark_by_id_api_v1")
 async def get_benchmark_by_id(run_id: str) -> dict:
     """Retrieve a single benchmark run manifest by ID."""

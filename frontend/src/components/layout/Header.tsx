@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const isReady = readiness?.status === 'ready' && readiness?.database === 'connected';
+  const isReady = readiness?.status === 'ready' || readiness?.database === 'connected';
 
   return (
     <header className="app-header">

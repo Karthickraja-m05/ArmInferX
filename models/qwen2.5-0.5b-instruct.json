@@ -1,0 +1,9 @@
+{
+  "model_id": "qwen2.5-0.5b-instruct",
+  "name": "Qwen 2.5 0.5B Instruct GGUF",
+  "parameter_count": "0.49B",
+  "quantization_formats": ["FP16", "Q4_K_M"],
+  "arm64_simd_extensions": ["bf16", "i8mm"],
+  "recommended_threads": 8,
+  "recommended_batch_size": 128
+}

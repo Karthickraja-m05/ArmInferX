@@ -67,6 +67,16 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 duration_seconds=duration_seconds,
             )
 
+            # Record in Observability Store
+            from backend.app.core.observability import observability_store
+            observability_store.record_log(
+                level="INFO" if response.status_code < 400 else "ERROR",
+                message=f"HTTP {request.method} {request.url.path} -> {response.status_code}",
+                module="http.access",
+                trace_id=request_id,
+                extra={"status_code": response.status_code, "process_time_ms": process_time_ms},
+            )
+
             logger.info(
                 "HTTP Request Completed",
                 status_code=response.status_code,
@@ -99,3 +109,26 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 exc_info=True,
             )
             raise
+
+
+class MaintenanceModeMiddleware(BaseHTTPMiddleware):
+    """Intercepts mutating HTTP requests when maintenance mode is toggled active."""
+
+    async def dispatch(  # type: ignore[override]
+        self, request: Request, call_next: Callable[[Request], Response]
+    ) -> Response:
+        from backend.app.services.health_service import health_service
+
+        if health_service.is_maintenance_mode and request.method in ("POST", "PUT", "DELETE", "PATCH"):
+            if not request.url.path.endswith("/system/maintenance"):
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=503,
+                    content={
+                        "detail": f"Service in Maintenance Mode: {health_service.maintenance_reason}",
+                        "status": "MAINTENANCE",
+                    },
+                )
+
+        return await call_next(request)  # type: ignore[misc]
+

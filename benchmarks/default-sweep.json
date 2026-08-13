@@ -1,0 +1,11 @@
+{
+  "benchmark_id": "sweep-graviton3-qwen2.5",
+  "target_hardware": "AWS Graviton3 (c7g.2xlarge)",
+  "model_id": "qwen2.5-0.5b-instruct",
+  "parameters": {
+    "threads": [1, 2, 4, 8],
+    "batch_size": [32, 64, 128],
+    "quantization": ["FP16", "Q4_K_M"]
+  },
+  "metrics": ["ttft_ms", "p50_latency_ms", "p99_latency_ms", "tokens_per_sec", "cost_per_m_tokens"]
+}

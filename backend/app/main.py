@@ -20,7 +20,12 @@ from backend.app.core.errors import (
     validation_exception_handler,
 )
 from backend.app.core.logging import configure_logging, logger
-from backend.app.core.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
+from backend.app.core.middleware import (
+    MaintenanceModeMiddleware,
+    RequestLoggingMiddleware,
+    SecurityHeadersMiddleware,
+)
+from backend.app.core.reliability import workflow_recovery_manager
 
 
 @asynccontextmanager
@@ -36,6 +41,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Initialize database connection pool on startup
     await init_db()
+
+    # Recover interrupted background workflows on service restart
+    workflow_recovery_manager.recover_and_resume_workflows()
 
     yield
 
@@ -59,6 +67,9 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # Custom Request Logging Middleware
 app.add_middleware(RequestLoggingMiddleware)
+
+# Maintenance Mode Middleware
+app.add_middleware(MaintenanceModeMiddleware)
 
 # CORS Middleware (Restricted origins in non-debug mode)
 cors_origins = (
@@ -84,11 +95,16 @@ app.add_exception_handler(Exception, generic_exception_handler)
 
 from backend.app.api.v1.agent import router as agent_root_router
 from backend.app.api.v1.benchmarks import router as benchmarks_root_router
+from backend.app.api.v1.deployment import router as deployment_root_router
 from backend.app.api.v1.experiments import router as experiments_root_router
+from backend.app.api.v1.health import probe_router
 from backend.app.api.v1.openai_api import router as openai_root_router
+from backend.app.api.v1.operational import router as operational_root_router
+from backend.app.api.v1.performix import router as performix_root_router
 from backend.app.api.v1.runtime import router as runtime_root_router
 
 # Include Routers
+app.include_router(probe_router)
 app.include_router(root_health_router)
 app.include_router(api_v1_router)
 app.include_router(openai_root_router)
@@ -96,6 +112,10 @@ app.include_router(runtime_root_router)
 app.include_router(benchmarks_root_router)
 app.include_router(experiments_root_router)
 app.include_router(agent_root_router)
+app.include_router(deployment_root_router)
+app.include_router(performix_root_router)
+app.include_router(operational_root_router)
+
 
 
 @app.get("/", summary="Root Status Overview")

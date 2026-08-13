@@ -2,14 +2,26 @@ import React from 'react';
 import {
   LayoutDashboard,
   FlaskConical,
-  Box,
   Rocket,
   Cpu,
   Server,
   Activity,
+  Award,
+  DollarSign,
+  Bot,
 } from 'lucide-react';
 
-export type NavTab = 'overview' | 'experiments' | 'models' | 'deployments' | 'optimization' | 'system';
+export type NavTab =
+  | 'overview'
+  | 'benchmarks'
+  | 'experiments'
+  | 'optimization'
+  | 'quality'
+  | 'cost'
+  | 'deployments'
+  | 'agent'
+  | 'performix'
+  | 'settings';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -18,13 +30,18 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={18} /> },
-    { id: 'models', label: 'Models', icon: <Box size={18} /> },
+    { id: 'overview', label: 'Home Overview', icon: <LayoutDashboard size={18} /> },
+    { id: 'benchmarks', label: 'Benchmarks', icon: <Activity size={18} /> },
     { id: 'experiments', label: 'Experiments', icon: <FlaskConical size={18} /> },
     { id: 'optimization', label: 'Optimization', icon: <Cpu size={18} /> },
+    { id: 'quality', label: 'Quality', icon: <Award size={18} /> },
+    { id: 'cost', label: 'Cost Analytics', icon: <DollarSign size={18} /> },
     { id: 'deployments', label: 'Deployments', icon: <Rocket size={18} /> },
-    { id: 'system', label: 'System', icon: <Server size={18} /> },
+    { id: 'agent', label: 'Agent Activity', icon: <Bot size={18} /> },
+    { id: 'performix', label: 'Arm Performix', icon: <Award size={18} /> },
+    { id: 'settings', label: 'Settings', icon: <Server size={18} /> },
   ];
+
 
   return (
     <aside className="sidebar">
@@ -34,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         </div>
         <div className="brand-text">
           <span className="brand-name">ArmServe</span>
-          <span className="brand-tag">Arm64 AI Engine</span>
+          <span className="brand-tag">AWS Graviton3 Engine</span>
         </div>
       </div>
 
@@ -54,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       <div className="sidebar-footer">
         <div className="arch-badge">
           <span className="arch-dot"></span>
-          <span>Target: Arm64 Neoverse</span>
+          <span>AWS ARM64 Graviton3</span>
         </div>
       </div>
     </aside>

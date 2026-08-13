@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="100%" height="100%" style="background-color: #0b0f19;">
+  <defs>
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Title Banner -->
+  <text x="500" y="45" font-family="Inter, Roboto, sans-serif" font-size="24" font-weight="bold" fill="#f8fafc" text-anchor="middle">ArmServe Autonomous Optimization Loop</text>
+  <text x="500" y="70" font-family="Inter, Roboto, sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">Continuous Telemetry Observation &amp; Optimization Agent Cycle</text>
+
+  <!-- Step 1: Observe -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="120" width="220" height="70" rx="10" fill="url(#boxGrad)" stroke="#38bdf8" stroke-width="2"/>
+    <text x="180" y="152" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#38bdf8" text-anchor="middle">1. Observe</text>
+    <text x="180" y="172" font-family="Inter, Roboto, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Telemetry &amp; Latency Metrics</text>
+  </g>
+
+  <path d="M 290 155 L 390 155" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Step 2: Analyze -->
+  <g filter="url(#shadow)">
+    <rect x="390" y="120" width="220" height="70" rx="10" fill="url(#boxGrad)" stroke="#818cf8" stroke-width="2"/>
+    <text x="500" y="152" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#818cf8" text-anchor="middle">2. Analyze</text>
+    <text x="500" y="172" font-family="Inter, Roboto, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Graviton Resource Limits</text>
+  </g>
+
+  <path d="M 610 155 L 710 155" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Step 3: Plan -->
+  <g filter="url(#shadow)">
+    <rect x="710" y="120" width="220" height="70" rx="10" fill="url(#boxGrad)" stroke="#c084fc" stroke-width="2"/>
+    <text x="820" y="152" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#c084fc" text-anchor="middle">3. Plan</text>
+    <text x="820" y="172" font-family="Inter, Roboto, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Hyperparameter Sweep Grid</text>
+  </g>
+
+  <path d="M 820 190 L 820 290" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Step 4: Experiment -->
+  <g filter="url(#shadow)">
+    <rect x="710" y="290" width="220" height="70" rx="10" fill="url(#boxGrad)" stroke="#f472b6" stroke-width="2"/>
+    <text x="820" y="322" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#f472b6" text-anchor="middle">4. Experiment</text>
+    <text x="820" y="342" font-family="Inter, Roboto, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">12-Trial Trial Execution</text>
+  </g>
+
+  <path d="M 710 325 L 610 325" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Step 5: Benchmark -->
+  <g filter="url(#shadow)">
+    <rect x="390" y="290" width="220" height="70" rx="10" fill="url(#boxGrad)" stroke="#fb923c" stroke-width="2"/>
+    <text x="500" y="322" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#fb923c" text-anchor="middle">5. Benchmark</text>
+    <text x="500" y="342" font-family="Inter, Roboto, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">TTFT &amp; Throughput Profiling</text>
+  </g>
+
+  <path d="M 390 325 L 290 325" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Step 6: Evaluate -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="290" width="220" height="70" rx="10" fill="url(#boxGrad)" stroke="#4ade80" stroke-width="2"/>
+    <text x="180" y="322" font-family="Inter, Roboto, sans-serif" font-size="16" font-weight="bold" fill="#4ade80" text-anchor="middle">6. Evaluate</text>
+    <text x="180" y="342" font-family="Inter, Roboto, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Quality Score &gt;95% SLA</text>
+  </g>
+
+  <path d="M 180 360 L 180 460" stroke="#38bdf8" stroke-width="2" />
+
+  <!-- Step 7: Continue / Stop -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="460" width="860" height="70" rx="10" fill="url(#boxGrad)" stroke="#facc15" stroke-width="2"/>
+    <text x="500" y="492" font-family="Inter, Roboto, sans-serif" font-size="18" font-weight="bold" fill="#facc15" text-anchor="middle">7. Continue / Stop Decision</text>
+    <text x="500" y="514" font-family="Inter, Roboto, sans-serif" font-size="13" fill="#94a3b8" text-anchor="middle">If Pareto optimal trial outperforms baseline, trigger Zero-Downtime Atomic Deployment (cfg-trial-003)</text>
+  </g>
+</svg>
