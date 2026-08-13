@@ -29,6 +29,7 @@ dependencies = [
     "typer>=0.9.0,<0.10.0",
     "rich>=13.7.1,<13.8.0",
     "python-dotenv>=1.0.1,<1.1.0",
+    "psutil>=5.9.8,<6.0.0",
 ]
 
 [project.optional-dependencies]
@@ -110,4 +111,3 @@ testpaths = [
 ]
 asyncio_mode = "auto"
 python_files = ["test_*.py"]
-
