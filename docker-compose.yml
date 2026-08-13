@@ -1,6 +1,39 @@
 version: '3.8'
 
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: armserve-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ARMSERVE_APP__ENV=production
+      - ARMSERVE_APP__DEBUG=false
+      - ARMSERVE_DATABASE__HOST=postgres
+      - ARMSERVE_DATABASE__PORT=5432
+      - ARMSERVE_DATABASE__USER=armserve
+      - ARMSERVE_DATABASE__PASSWORD=armserve_dev_pass
+      - ARMSERVE_DATABASE__NAME=armserve_dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: armserve-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
   postgres:
     image: timescale/timescaledb:latest-pg16
     container_name: armserve-postgres
