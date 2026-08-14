@@ -19,7 +19,7 @@ module "networking" {
   availability_zones        = var.availability_zones
   public_subnet_cidrs       = ["10.20.1.0/24", "10.20.2.0/24", "10.20.3.0/24"]
   private_subnet_cidrs      = ["10.20.10.0/24", "10.20.20.0/24", "10.20.30.0/24"]
-  database_subnet_cidrs     = ["10.20.100.0/24", "10.20.200.0/24", "10.20.300.0/24"]
+  database_subnet_cidrs     = ["10.20.101.0/24", "10.20.102.0/24", "10.20.103.0/24"]
   enable_single_nat_gateway = false
   tags                      = var.tags
 }
