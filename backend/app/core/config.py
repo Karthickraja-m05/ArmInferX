@@ -124,7 +124,7 @@ class AuthConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     secret_key: SecretStr = Field(
-        default=SecretStr("dev-secret-key-change-in-production-min-32-chars")
+        default=SecretStr("armserve-secure-jwt-signing-secret-key-32bytes-min")
     )
     jwt_algorithm: str = Field(default="HS256")
     access_token_expire_minutes: int = Field(default=60, ge=1)
@@ -188,13 +188,13 @@ class ArmServeSettings(BaseSettings):
             self.app.api_host = self.API_HOST
         if self.API_PORT is not None:
             self.app.api_port = self.API_PORT
-        if self.SECRET_KEY is not None:
+        if self.SECRET_KEY is not None and self.auth.secret_key is None:
             self.auth.secret_key = self.SECRET_KEY
-        if self.DATABASE_URL is not None:
+        if self.DATABASE_URL is not None and self.database.database_url is None:
             self.database.database_url = self.DATABASE_URL
-        elif os.getenv("DATABASE_URL"):
+        elif os.getenv("DATABASE_URL") and self.database.database_url is None:
             self.database.database_url = SecretStr(os.getenv("DATABASE_URL") or "")
-        if self.DB_PASSWORD is not None:
+        if self.DB_PASSWORD is not None and self.database.password is None:
             self.database.password = self.DB_PASSWORD
 
         # Production Validation Rules
