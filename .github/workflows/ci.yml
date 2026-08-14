@@ -84,7 +84,6 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          pip install alembic==1.13.1
       - name: Run integration tests
         env:
           DATABASE_URL: "sqlite+aiosqlite:///test_armserve.db"

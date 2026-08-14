@@ -18,5 +18,11 @@ services:
         value: "0.0.0.0"
       - key: ARMSERVE_APP__CORS_ORIGINS
         value: '["*"]'
+      - key: ARMSERVE_AUTH__SECRET_KEY
+        generateValue: true
+      - key: ARMSERVE_DATABASE__PASSWORD
+        generateValue: true
       - key: DATABASE_URL
         value: "sqlite+aiosqlite:///storage/armserve.db"
+
+
