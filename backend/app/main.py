@@ -98,9 +98,10 @@ cors_origins = ["*"] if settings.app.debug else settings.app.cors_origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Request-ID"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Global Exception Handlers for Structured Error Responses

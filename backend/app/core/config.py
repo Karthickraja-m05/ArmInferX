@@ -38,6 +38,7 @@ class AppConfig(BaseModel):
             "http://localhost:3000",
             "http://localhost:5173",
             "https://app.armserve.io",
+            "https://arminferx-ui.vercel.app",
             "*",
         ]
     )

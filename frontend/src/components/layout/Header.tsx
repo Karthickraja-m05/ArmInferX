@@ -29,9 +29,15 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
 
   useEffect(() => {
     loadStatus();
-    const interval = setInterval(loadStatus, 15000);
+    const interval = setInterval(loadStatus, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const formatLatency = (ms: number) => {
+    if (ms >= 5000) return `${(ms / 1000).toFixed(1)}s cold start`;
+    if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
+    return `${Math.round(ms)}ms`;
+  };
 
   const isReady = readiness?.status === 'ready' || readiness?.database === 'connected';
 
@@ -48,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
             <Database size={14} style={{ marginRight: '0.4rem' }} />
             <span>DB: {readiness.database}</span>
             {readiness.latency_ms !== undefined && readiness.latency_ms !== null && (
-              <span className="latency-val">({readiness.latency_ms}ms)</span>
+              <span className="latency-val">({formatLatency(readiness.latency_ms)})</span>
             )}
           </div>
         )}

@@ -43,6 +43,13 @@ def get_engine_kwargs(url: str) -> dict[str, Any]:
 
 def build_engine(url: str | None = None) -> AsyncEngine:
     db_url = url or settings.database.connection_url
+    if "sqlite" in db_url:
+        import os
+        path_part = db_url.split("sqlite+aiosqlite:///")[-1].split("?")[0]
+        if path_part and not path_part.startswith(":memory:"):
+            dir_name = os.path.dirname(path_part)
+            if dir_name:
+                os.makedirs(dir_name, exist_ok=True)
     return create_async_engine(db_url, **get_engine_kwargs(db_url))
 
 

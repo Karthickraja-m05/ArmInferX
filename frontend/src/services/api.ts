@@ -309,8 +309,14 @@ export interface ApiError {
   details?: unknown;
 }
 
+export function buildUrl(endpoint: string): string {
+  const base = (ENV.API_BASE_URL || '').trim().replace(/\/+$/, '');
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return base ? `${base}${cleanEndpoint}` : cleanEndpoint;
+}
+
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${ENV.API_BASE_URL}${endpoint}`;
+  const url = buildUrl(endpoint);
   try {
     const response = await fetch(url, {
       headers: {
@@ -321,6 +327,12 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     });
 
     if (!response.ok) {
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        throw new Error(
+          `Backend server is starting up or temporarily unavailable (HTTP ${response.status}). If hosted on Render Free tier, please wait 30-60 seconds for it to wake up.`
+        );
+      }
+
       let errorData: ApiError | null = null;
       try {
         errorData = await response.json();
@@ -336,7 +348,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     if (err instanceof Error) {
       throw err;
     }
-    throw new Error('An unknown network error occurred');
+    throw new Error('An unknown network error occurred while contacting the backend.');
   }
 }
 
@@ -581,7 +593,7 @@ export async function fetchPerformixComparison(
 }
 
 export async function fetchPerformixReport(format: 'markdown' | 'json' | 'csv' = 'markdown'): Promise<string> {
-  const url = `${ENV.API_BASE_URL}/performix/report?format=${format}`;
+  const url = buildUrl(`/performix/report?format=${format}`);
   const response = await fetch(url);
   return await response.text();
 }
