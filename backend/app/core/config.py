@@ -33,6 +33,14 @@ class AppConfig(BaseModel):
     api_host: str = Field(default="0.0.0.0")  # nosec B104
     api_port: int = Field(default=8000, ge=1, le=65535)
     storage_path: str = Field(default="./storage")
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://app.armserve.io",
+            "*",
+        ]
+    )
 
 
 class DatabaseConfig(BaseModel):

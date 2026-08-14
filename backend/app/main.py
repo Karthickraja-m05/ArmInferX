@@ -91,12 +91,9 @@ app.add_middleware(RequestLoggingMiddleware)
 # Maintenance Mode Middleware
 app.add_middleware(MaintenanceModeMiddleware)
 
-# CORS Middleware (Restricted origins in non-debug mode)
-cors_origins = (
-    ["*"]
-    if settings.app.debug
-    else ["http://localhost:3000", "http://localhost:5173", "https://app.armserve.io"]
-)
+# CORS Middleware (Configurable via settings / environment)
+cors_origins = ["*"] if settings.app.debug else settings.app.cors_origins
+
 
 app.add_middleware(
     CORSMiddleware,
