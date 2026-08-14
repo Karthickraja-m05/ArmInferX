@@ -45,6 +45,7 @@ def build_engine(url: str | None = None) -> AsyncEngine:
     db_url = url or settings.database.connection_url
     if "sqlite" in db_url:
         import os
+
         path_part = db_url.split("sqlite+aiosqlite:///")[-1].split("?")[0]
         if path_part and not path_part.startswith(":memory:"):
             dir_name = os.path.dirname(path_part)

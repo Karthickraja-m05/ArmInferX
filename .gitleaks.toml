@@ -31,6 +31,7 @@ regexes = [
   '''secure-prod-db-pass-12345''',
   '''sensitive-super-secret-key-value-999''',
   '''arm_live_secret_key_99999999''',
+  '''armserve-secure-jwt-signing-secret-key-32bytes-min''',
 ]
 stopwords = [
   "armserve_dev_pass",
@@ -38,6 +39,7 @@ stopwords = [
   "test_secret_key_mock",
   "mock_jwt_secret_token",
   "dev-secret-key-change-in-production-min-32-chars",
+  "armserve-secure-jwt-signing-secret-key-32bytes-min",
   "armserve_docker_secret_key_32_bytes_long!",
   "armserve_docker_secure_pass_2026!",
 ]
