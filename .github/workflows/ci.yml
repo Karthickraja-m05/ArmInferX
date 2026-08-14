@@ -193,7 +193,7 @@ jobs:
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/
       - name: Run gitleaks
-        run: gitleaks detect --source . --config .gitleaks.toml --verbose --no-git
+        run: gitleaks detect --source . --config-path .gitleaks.toml --verbose --no-git
 
   dependency-audit:
     name: "Security / Dependency Audit"
