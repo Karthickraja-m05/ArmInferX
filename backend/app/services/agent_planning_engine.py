@@ -5,13 +5,12 @@ quality evaluations, and cost models while preventing duplicate trials.
 """
 
 import hashlib
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any, Literal
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.services.agent_observation_engine import AgentStateSnapshot
 

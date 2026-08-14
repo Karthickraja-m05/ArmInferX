@@ -4,13 +4,12 @@ Compares quality evaluation reports between a baseline configuration and an opti
 measures score & category deltas, detects quality regressions, and enforces degradation thresholds.
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.services.quality_scoring_engine import QualityEvaluationReport
 
@@ -66,7 +65,9 @@ class QualityComparator:
         cat_deltas: dict[str, float] = {}
         cat_details: list[dict[str, Any]] = []
 
-        all_cats = set(baseline_report.category_scores.keys()).union(set(target_report.category_scores.keys()))
+        all_cats = set(baseline_report.category_scores.keys()).union(
+            set(target_report.category_scores.keys())
+        )
         for cat in sorted(all_cats):
             b_cat = baseline_report.category_scores.get(cat, 0.0)
             t_cat = target_report.category_scores.get(cat, 0.0)
@@ -78,13 +79,17 @@ class QualityComparator:
                     "baseline_score": b_cat,
                     "target_score": t_cat,
                     "difference": c_diff,
-                    "status": "IMPROVED" if c_diff > 0 else ("DEGRADED" if c_diff < 0 else "UNCHANGED"),
+                    "status": "IMPROVED"
+                    if c_diff > 0
+                    else ("DEGRADED" if c_diff < 0 else "UNCHANGED"),
                 }
             )
 
         # Dimension differences
         dim_deltas: dict[str, float] = {}
-        all_dims = set(baseline_report.dimension_scores.keys()).union(set(target_report.dimension_scores.keys()))
+        all_dims = set(baseline_report.dimension_scores.keys()).union(
+            set(target_report.dimension_scores.keys())
+        )
         for dim in sorted(all_dims):
             b_dim = baseline_report.dimension_scores.get(dim, 0.0)
             t_dim = target_report.dimension_scores.get(dim, 0.0)

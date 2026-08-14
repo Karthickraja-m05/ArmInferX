@@ -5,7 +5,7 @@ import sys
 import time
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from backend.app.core.config import ArmServeSettings

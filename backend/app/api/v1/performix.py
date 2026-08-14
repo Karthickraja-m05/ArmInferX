@@ -1,11 +1,11 @@
 """Arm Performix Benchmark, Correlation, and Evidence Generation REST API Router."""
 
-from typing import Literal, Optional
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from typing import Literal
+
 import structlog
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from backend.app.schemas.performix import (
-    EvidenceReport,
     PerformixComparisonResult,
     PerformixRunRequest,
     PerformixRunResult,
@@ -19,8 +19,18 @@ logger = structlog.get_logger("backend.app.api.v1.performix")
 router = APIRouter(tags=["Performix Integration"])
 
 
-@router.post("/performix/run", response_model=PerformixRunResult, status_code=status.HTTP_201_CREATED, operation_id="run_performix_direct")
-@router.post("/api/v1/performix/run", response_model=PerformixRunResult, status_code=status.HTTP_201_CREATED, operation_id="run_performix_api_v1")
+@router.post(
+    "/performix/run",
+    response_model=PerformixRunResult,
+    status_code=status.HTTP_201_CREATED,
+    operation_id="run_performix_direct",
+)
+@router.post(
+    "/api/v1/performix/run",
+    response_model=PerformixRunResult,
+    status_code=status.HTTP_201_CREATED,
+    operation_id="run_performix_api_v1",
+)
 async def run_performix_benchmark(body: PerformixRunRequest) -> PerformixRunResult:
     """Execute real Arm Performix benchmark workload on AWS ARM64 Graviton environment."""
     try:
@@ -35,10 +45,12 @@ async def run_performix_benchmark(body: PerformixRunRequest) -> PerformixRunResu
 
 
 @router.get("/performix/results", response_model=dict, operation_id="get_performix_results_direct")
-@router.get("/api/v1/performix/results", response_model=dict, operation_id="get_performix_results_api_v1")
+@router.get(
+    "/api/v1/performix/results", response_model=dict, operation_id="get_performix_results_api_v1"
+)
 async def get_performix_results(
     limit: int = Query(default=20, ge=1, le=100),
-    model_id: Optional[str] = Query(default=None),
+    model_id: str | None = Query(default=None),
 ) -> dict:
     """List historical Performix benchmark execution results with pagination and filtering."""
     all_results = performix_runner.list_results(limit=100)
@@ -53,8 +65,16 @@ async def get_performix_results(
     }
 
 
-@router.get("/performix/comparison", response_model=PerformixComparisonResult, operation_id="get_performix_comparison_direct")
-@router.get("/api/v1/performix/comparison", response_model=PerformixComparisonResult, operation_id="get_performix_comparison_api_v1")
+@router.get(
+    "/performix/comparison",
+    response_model=PerformixComparisonResult,
+    operation_id="get_performix_comparison_direct",
+)
+@router.get(
+    "/api/v1/performix/comparison",
+    response_model=PerformixComparisonResult,
+    operation_id="get_performix_comparison_api_v1",
+)
 async def compare_performix_benchmark(
     armserve_run_id: str = Query(default="bm-run-001"),
     performix_run_id: str | None = Query(default=None),
@@ -92,5 +112,11 @@ async def generate_performix_report(
 ) -> Response:
     """Generate optimization evidence report in Markdown, JSON, or CSV format for hackathon submission."""
     report = evidence_generator.generate_report(format_type=format)
-    media_type = "text/markdown" if format == "markdown" else "text/csv" if format == "csv" else "application/json"
+    media_type = (
+        "text/markdown"
+        if format == "markdown"
+        else "text/csv"
+        if format == "csv"
+        else "application/json"
+    )
     return Response(content=report.content, media_type=media_type)

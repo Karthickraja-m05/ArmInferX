@@ -4,10 +4,8 @@ Calculates granular cloud infrastructure costs (cost per request, cost per token
 cost per hour, cost per benchmark run) using configurable provider pricing models.
 """
 
-import json
-from pathlib import Path
 import time
-from typing import Any
+from pathlib import Path
 
 import structlog
 from pydantic import BaseModel, Field
@@ -105,5 +103,10 @@ class CostCalculator:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(estimate.model_dump_json(indent=2))
 
-        logger.info("Completed cost calculation", calc_id=calc_id, run_cost=run_cost, cost_1m=cost_per_1m_tok)
+        logger.info(
+            "Completed cost calculation",
+            calc_id=calc_id,
+            run_cost=run_cost,
+            cost_1m=cost_per_1m_tok,
+        )
         return estimate

@@ -5,14 +5,12 @@ sequentially with resource safety, tracks retry attempts, and reports real-time 
 """
 
 import asyncio
-from collections import deque
-import json
-from pathlib import Path
 import time
-from typing import Any, Literal
+from collections import deque
+from typing import Literal
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.services.experiment_executor import ExperimentExecutor, ExperimentRunRecord
 
@@ -32,9 +30,10 @@ class SchedulerStatusResponse(BaseModel):
 class ExperimentScheduler:
     """Production Sequential & Resource-Safe Experiment Scheduler."""
 
-    _instance = None
+    _instance: "ExperimentScheduler | None" = None
+    _initialized: bool = False
 
-    def __new__(cls):
+    def __new__(cls) -> "ExperimentScheduler":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialized = False
@@ -69,7 +68,9 @@ class ExperimentScheduler:
             if cid not in self.queue and cid != self.current_config_id:
                 self.queue.append(cid)
                 enqueued.append(cid)
-                self._log_event(f"Enqueued configuration '{cid}' into queue (Position: {len(self.queue)})")
+                self._log_event(
+                    f"Enqueued configuration '{cid}' into queue (Position: {len(self.queue)})"
+                )
 
         return enqueued
 
@@ -106,10 +107,14 @@ class ExperimentScheduler:
                         record = await self._executor.execute_experiment(config_id)
                         if record.status == "COMPLETED":
                             self.completed_count += 1
-                            self._log_event(f"Successfully completed experiment '{record.experiment_id}' for config '{config_id}'")
+                            self._log_event(
+                                f"Successfully completed experiment '{record.experiment_id}' for config '{config_id}'"
+                            )
                         else:
                             self.failed_count += 1
-                            self._log_event(f"Experiment '{record.experiment_id}' failed: {record.error_message}")
+                            self._log_event(
+                                f"Experiment '{record.experiment_id}' failed: {record.error_message}"
+                            )
 
                         processed_records.append(record)
                     except Exception as err:

@@ -58,7 +58,7 @@ AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
 
 
 async def init_db(url: str | None = None) -> AsyncEngine:
-    """Initialize or reconfigure the database engine."""
+    """Initialize or reconfigure the database engine and ensure metadata tables exist."""
     global engine, AsyncSessionLocal
     if engine is not None:
         await engine.dispose()
@@ -70,6 +70,10 @@ async def init_db(url: str | None = None) -> AsyncEngine:
         autocommit=False,
         autoflush=False,
     )
+    async with engine.begin() as conn:
+        from backend.app.models import Base
+
+        await conn.run_sync(Base.metadata.create_all)
     return engine
 
 

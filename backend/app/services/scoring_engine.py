@@ -4,26 +4,31 @@ Computes weighted optimization scores from normalized metrics, supports configur
 objective weights, and generates detailed individual metric score breakdowns.
 """
 
-from typing import Any
 import structlog
 from pydantic import BaseModel, Field
 
-from backend.app.services.metrics_normalizer import MetricsNormalizer, NormalizedMetricsSnapshot
+from backend.app.services.metrics_normalizer import NormalizedMetricsSnapshot
 
 logger = structlog.get_logger("backend.app.services.scoring_engine")
 
 
 class ObjectiveWeights(BaseModel):
-    latency: float = Field(0.35, ge=0.0, description="Weight for latency metrics.")
-    throughput: float = Field(0.35, ge=0.0, description="Weight for RPS/TPS throughput metrics.")
-    memory: float = Field(0.15, ge=0.0, description="Weight for RAM RSS memory usage.")
-    cpu: float = Field(0.10, ge=0.0, description="Weight for CPU utilization.")
-    reliability: float = Field(0.05, ge=0.0, description="Weight for error rate / success rate.")
+    latency: float = Field(default=0.35, ge=0.0, description="Weight for latency metrics.")
+    throughput: float = Field(
+        default=0.35, ge=0.0, description="Weight for RPS/TPS throughput metrics."
+    )
+    memory: float = Field(default=0.15, ge=0.0, description="Weight for RAM RSS memory usage.")
+    cpu: float = Field(default=0.10, ge=0.0, description="Weight for CPU utilization.")
+    reliability: float = Field(
+        default=0.05, ge=0.0, description="Weight for error rate / success rate."
+    )
 
     def normalize_weights(self) -> "ObjectiveWeights":
         total = self.latency + self.throughput + self.memory + self.cpu + self.reliability
         if total <= 0:
-            return ObjectiveWeights(latency=0.35, throughput=0.35, memory=0.15, cpu=0.10, reliability=0.05)
+            return ObjectiveWeights(
+                latency=0.35, throughput=0.35, memory=0.15, cpu=0.10, reliability=0.05
+            )
         return ObjectiveWeights(
             latency=round(self.latency / total, 4),
             throughput=round(self.throughput / total, 4),
@@ -56,7 +61,9 @@ class ScoringEngine:
         """Compute reproducible weighted composite score and detailed metric breakdown."""
         w = (weights or ObjectiveWeights()).normalize_weights()
 
-        norm_map = {m.metric_name: m.normalized_value for m in normalized_snapshot.normalized_metrics}
+        norm_map = {
+            m.metric_name: m.normalized_value for m in normalized_snapshot.normalized_metrics
+        }
 
         # Sub-component scores
         lat_val = norm_map.get("latency_p50_ms", 1.0)

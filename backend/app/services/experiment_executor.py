@@ -6,18 +6,22 @@ captures telemetry, tracks state transitions, and maintains traceable execution 
 
 import asyncio
 import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any, Literal
 
 import structlog
 from pydantic import BaseModel, Field
 
 from backend.app.core.config import settings
-from backend.app.services.benchmark_runner import BenchmarkConfig, BenchmarkRunResult, BenchmarkRunner
+from backend.app.services.benchmark_runner import (
+    BenchmarkConfig,
+    BenchmarkRunner,
+    BenchmarkRunResult,
+)
 from backend.app.services.experiment_generator import CONFIGS_DIR, ExperimentConfigRecord
 from backend.app.services.metrics_collector import CompleteMetricsSnapshot, MetricsCollector
-from backend.app.services.runtime_manager import RuntimeManager, runtime_manager
+from backend.app.services.runtime_manager import runtime_manager
 
 logger = structlog.get_logger("backend.app.services.experiment_executor")
 
@@ -60,9 +64,13 @@ class ExperimentExecutor:
         with open(file_path, encoding="utf-8") as f:
             return ExperimentConfigRecord(**json.load(f))
 
-    def _apply_runtime_configuration(self, config: ExperimentConfigRecord, exp_record: ExperimentRunRecord) -> None:
+    def _apply_runtime_configuration(
+        self, config: ExperimentConfigRecord, exp_record: ExperimentRunRecord
+    ) -> None:
         """Apply dynamic parameter configuration to active runtime settings."""
-        exp_record.execution_logs.append(f"Applying configuration: threads={config.thread_count}, batch={config.batch_size}, temp={config.temperature}")
+        exp_record.execution_logs.append(
+            f"Applying configuration: threads={config.thread_count}, batch={config.batch_size}, temp={config.temperature}"
+        )
         logger.info(
             "Applying experiment runtime config",
             config_id=config.config_id,
@@ -93,6 +101,7 @@ class ExperimentExecutor:
                     c_dict["created_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ")
                 if "hash_signature" not in c_dict:
                     import hashlib
+
                     c_dict["hash_signature"] = hashlib.sha256(str(c_dict).encode()).hexdigest()[:16]
                 if "config_id" not in c_dict:
                     c_dict["config_id"] = f"cfg-{c_dict['hash_signature'][:10]}"
@@ -121,7 +130,9 @@ class ExperimentExecutor:
             model_id=config.model_id,
             configuration=config.model_dump(),
         )
-        exp_record.execution_logs.append(f"Started experiment {exp_id} for config {config.config_id}")
+        exp_record.execution_logs.append(
+            f"Started experiment {exp_id} for config {config.config_id}"
+        )
 
         max_retries = 3
         for attempt in range(1, max_retries + 1):
@@ -173,7 +184,9 @@ class ExperimentExecutor:
                 # Mark completed
                 exp_record.status = "COMPLETED"
                 exp_record.completed_at = time.strftime("%Y-%m-%dT%H:%M:%SZ")
-                exp_record.execution_logs.append(f"Experiment {exp_id} completed successfully (RPS={bench_result.requests_per_second}, P50={bench_result.latency_p50_ms}ms)")
+                exp_record.execution_logs.append(
+                    f"Experiment {exp_id} completed successfully (RPS={bench_result.requests_per_second}, P50={bench_result.latency_p50_ms}ms)"
+                )
 
                 logger.info(
                     "Experiment executed successfully",
@@ -185,7 +198,9 @@ class ExperimentExecutor:
                 break
 
             except Exception as err:
-                logger.warning("Experiment attempt failed", exp_id=exp_id, attempt=attempt, error=str(err))
+                logger.warning(
+                    "Experiment attempt failed", exp_id=exp_id, attempt=attempt, error=str(err)
+                )
                 exp_record.execution_logs.append(f"Attempt {attempt} failed: {err}")
                 if attempt == max_retries:
                     exp_record.status = "FAILED"
@@ -219,6 +234,24 @@ class ExperimentExecutor:
                     continue
                 if model_id_filter and data.get("model_id") != model_id_filter:
                     continue
+
+                # Normalize keys for dashboard UI consumption
+                exp_id = data.get("id") or data.get("experiment_id") or run_path.stem
+                data["id"] = exp_id
+                data["name"] = data.get("name") or exp_id
+                data["status"] = data.get("status", "COMPLETED")
+                data["model_id"] = (
+                    data.get("model_id")
+                    or (data.get("configuration") or {}).get("model_id")
+                    or "qwen2.5-0.5b-instruct"
+                )
+                data["budget"] = data.get("budget", 10)
+                data["created_at"] = (
+                    data.get("created_at")
+                    or data.get("started_at")
+                    or data.get("timestamp")
+                    or time.strftime("%Y-%m-%dT%H:%M:%SZ")
+                )
 
                 runs.append(data)
             except Exception as err:

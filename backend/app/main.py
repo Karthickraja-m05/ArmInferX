@@ -10,7 +10,16 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.app.api.root_health import router as root_health_router
+from backend.app.api.v1.agent import router as agent_root_router
+from backend.app.api.v1.benchmarks import router as benchmarks_root_router
+from backend.app.api.v1.deployment import router as deployment_root_router
+from backend.app.api.v1.experiments import router as experiments_root_router
+from backend.app.api.v1.health import probe_router
+from backend.app.api.v1.openai_api import router as openai_root_router
+from backend.app.api.v1.operational import router as operational_root_router
+from backend.app.api.v1.performix import router as performix_root_router
 from backend.app.api.v1.router import api_v1_router
+from backend.app.api.v1.runtime import router as runtime_root_router
 from backend.app.core.config import settings
 from backend.app.core.database import close_db, init_db
 from backend.app.core.errors import (
@@ -39,8 +48,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         port=settings.app.api_port,
     )
 
-    # Initialize database connection pool on startup
-    await init_db()
+    # Initialize database connection pool on startup unless in test mode (managed by pytest fixtures)
+    if settings.app.env.value != "test":
+        await init_db()
+
+    # Ensure dataset manager seeds initial quality evaluation datasets if fresh
+    from backend.app.services.quality_dataset_manager import QualityDatasetManager
+
+    QualityDatasetManager()
+
+    # Ensure deployment manager has active deployment initialized
+    from backend.app.services.deployment_version_manager import deployment_version_manager
+
+    deployment_version_manager._seed_initial_deployment_if_empty()
 
     # Recover interrupted background workflows on service restart
     workflow_recovery_manager.recover_and_resume_workflows()
@@ -93,16 +113,6 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(SQLAlchemyError, db_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
-from backend.app.api.v1.agent import router as agent_root_router
-from backend.app.api.v1.benchmarks import router as benchmarks_root_router
-from backend.app.api.v1.deployment import router as deployment_root_router
-from backend.app.api.v1.experiments import router as experiments_root_router
-from backend.app.api.v1.health import probe_router
-from backend.app.api.v1.openai_api import router as openai_root_router
-from backend.app.api.v1.operational import router as operational_root_router
-from backend.app.api.v1.performix import router as performix_root_router
-from backend.app.api.v1.runtime import router as runtime_root_router
-
 # Include Routers
 app.include_router(probe_router)
 app.include_router(root_health_router)
@@ -115,7 +125,6 @@ app.include_router(agent_root_router)
 app.include_router(deployment_root_router)
 app.include_router(performix_root_router)
 app.include_router(operational_root_router)
-
 
 
 @app.get("/", summary="Root Status Overview")

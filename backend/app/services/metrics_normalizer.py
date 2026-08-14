@@ -4,12 +4,11 @@ Performs min-max scaling, direction inversion (for latency, memory, and CPU metr
 and persistence of normalized score vectors without mutating raw benchmark data.
 """
 
-import json
 from pathlib import Path
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 logger = structlog.get_logger("backend.app.services.metrics_normalizer")
 
@@ -101,11 +100,19 @@ class MetricsNormalizer:
 
         # 1. Compute Dataset Min and Max Bounds for each metric
         bounds: dict[str, tuple[float, float]] = {}
-        for metric_key in metric_directions.keys():
-            vals = []
+        for metric_key, _ in metric_directions.items():
+            vals: list[float] = []
             for run in runs_data:
-                m_summary = run.get("metrics_summary") if isinstance(run.get("metrics_summary"), dict) else {}
-                v = run.get(metric_key) or m_summary.get(metric_key)
+                if not isinstance(run, dict):
+                    continue
+                m_summary = (
+                    run.get("metrics_summary")
+                    if isinstance(run.get("metrics_summary"), dict)
+                    else {}
+                )
+                v = run.get(metric_key) or (
+                    m_summary.get(metric_key) if isinstance(m_summary, dict) else None
+                )
                 if v is not None:
                     vals.append(float(v))
             if vals:
@@ -115,9 +122,13 @@ class MetricsNormalizer:
         snapshots: list[NormalizedMetricsSnapshot] = []
 
         for run in runs_data:
-            run_id = run.get("run_id") or run.get("experiment_id", "N/A")
-            ts = run.get("timestamp") or run.get("started_at", "N/A")
-            m_summary = run.get("metrics_summary") if isinstance(run.get("metrics_summary"), dict) else {}
+            if not isinstance(run, dict):
+                continue
+            run_id = str(run.get("run_id") or run.get("experiment_id", "N/A"))
+            ts = str(run.get("timestamp") or run.get("started_at", "N/A"))
+            m_summary = (
+                run.get("metrics_summary") if isinstance(run.get("metrics_summary"), dict) else {}
+            )
 
             norm_items: list[NormalizedMetricItem] = []
             score_acc = 0.0
@@ -128,7 +139,9 @@ class MetricsNormalizer:
                     continue
 
                 min_v, max_v = bounds[m_key]
-                raw_v = run.get(m_key) or m_summary.get(m_key)
+                raw_v = run.get(m_key) or (
+                    m_summary.get(m_key) if isinstance(m_summary, dict) else None
+                )
                 if raw_v is None:
                     continue
 

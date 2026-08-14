@@ -25,7 +25,9 @@ class DeploymentRecord(Base):
     replicas: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     configuration: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
 
-    deployment_version: Mapped[str] = mapped_column(String(50), nullable=False, default="v1.0.0", index=True)
+    deployment_version: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="v1.0.0", index=True
+    )
     runtime_version: Mapped[str] = mapped_column(String(50), nullable=False, default="1.0.0-arm64")
     config_version: Mapped[str] = mapped_column(String(50), nullable=False, default="cfg-v1")
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)

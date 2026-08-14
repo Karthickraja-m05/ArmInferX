@@ -4,7 +4,6 @@ Collects real runtime measurements (request count, RPS, TPS, P50/P90/P99 latency
 CPU %, Memory MB, error rate, availability %) and generates real-time telemetry alerts.
 """
 
-import logging
 import time
 from typing import Any
 
@@ -15,7 +14,6 @@ from pydantic import BaseModel, Field
 from backend.app.core.metrics import metrics_collector
 
 logger = structlog.get_logger(__name__)
-
 
 
 class MonitoringAlertRecord(BaseModel):
@@ -142,9 +140,7 @@ class DeploymentMonitor:
 
         return snapshot
 
-    def get_monitoring_history(
-        self, deployment_id: str, limit: int = 20
-    ) -> list[dict[str, Any]]:
+    def get_monitoring_history(self, deployment_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Fetch monitoring time-series history for deployment."""
         history = self._monitoring_history.get(str(deployment_id), [])
         return history[-limit:]

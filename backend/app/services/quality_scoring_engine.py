@@ -6,13 +6,12 @@ and dimension weighting (correctness, completeness, instruction following, forma
 
 import ast
 import json
-from pathlib import Path
 import re
 import time
-from typing import Any
+from pathlib import Path
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.services.quality_response_collector import EvaluationCollectionRecord, ResponseItem
 
@@ -61,7 +60,9 @@ class QualityScoringEngine:
         self.target_dir.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def _evaluate_single_prompt(item: ResponseItem, weights: DimensionWeights) -> PromptQualityScore:
+    def _evaluate_single_prompt(
+        item: ResponseItem, weights: DimensionWeights
+    ) -> PromptQualityScore:
         """Evaluate accuracy, formatting, completeness, and instruction following for a single response."""
         logs: list[str] = []
         if item.status == "ERROR" or not item.response_text.strip():
@@ -74,7 +75,9 @@ class QualityScoringEngine:
                 formatting_score=0.0,
                 total_prompt_score=0.0,
                 passed=False,
-                evaluation_logs=[f"Prompt execution failed: {item.error_message or 'Empty output'}"],
+                evaluation_logs=[
+                    f"Prompt execution failed: {item.error_message or 'Empty output'}"
+                ],
             )
 
         resp_text = item.response_text.strip()
@@ -86,14 +89,18 @@ class QualityScoringEngine:
         if kw_list:
             found_kw = sum(1 for kw in kw_list if kw.lower() in resp_text.lower())
             corr_acc = (found_kw / len(kw_list)) * 100.0
-            logs.append(f"Keyword match: {found_kw}/{len(kw_list)} keywords present ({corr_acc:.1f}%)")
+            logs.append(
+                f"Keyword match: {found_kw}/{len(kw_list)} keywords present ({corr_acc:.1f}%)"
+            )
 
         exact_contains = exp.get("exact_match_contains", [])
         if exact_contains:
             found_exact = sum(1 for term in exact_contains if term.lower() in resp_text.lower())
             exact_acc = (found_exact / len(exact_contains)) * 100.0
             corr_acc = (corr_acc + exact_acc) / 2.0
-            logs.append(f"Exact match containment: {found_exact}/{len(exact_contains)} matches ({exact_acc:.1f}%)")
+            logs.append(
+                f"Exact match containment: {found_exact}/{len(exact_contains)} matches ({exact_acc:.1f}%)"
+            )
 
         # 2. Completeness (Non-empty, length check)
         comp_acc = 100.0
@@ -110,7 +117,9 @@ class QualityScoringEngine:
             sentences = [s for s in re.split(r"[.!?]+", resp_text) if s.strip()]
             if len(sentences) > max_sentences:
                 inst_acc = 70.0
-                logs.append(f"Instruction limit exceeded: {len(sentences)} sentences (max allowed: {max_sentences})")
+                logs.append(
+                    f"Instruction limit exceeded: {len(sentences)} sentences (max allowed: {max_sentences})"
+                )
             else:
                 logs.append("Instruction sentence limit respected")
 
@@ -186,7 +195,9 @@ class QualityScoringEngine:
 
         count = max(1, len(record.responses))
 
-        cat_scores = {cat: round(sum(scores) / len(scores), 2) for cat, scores in category_map.items()}
+        cat_scores = {
+            cat: round(sum(scores) / len(scores), 2) for cat, scores in category_map.items()
+        }
 
         dim_scores = {
             "correctness": round(corr_sum / count, 2),
@@ -216,9 +227,13 @@ class QualityScoringEngine:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(report.model_dump_json(indent=2))
 
-        logger.info("Completed automated quality evaluation", eval_id=eval_id, score=overall_score, passed=passed)
+        logger.info(
+            "Completed automated quality evaluation",
+            eval_id=eval_id,
+            score=overall_score,
+            passed=passed,
+        )
         return report
 
 
 quality_scoring_engine = QualityScoringEngine()
-

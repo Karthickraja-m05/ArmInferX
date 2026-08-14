@@ -50,7 +50,9 @@ class ProductionConfigManager:
     @staticmethod
     def compute_config_hash(config_dict: dict[str, Any]) -> str:
         """Compute deterministic SHA-256 hash signature of configuration dict."""
-        sanitized = {k: v for k, v in sorted(config_dict.items()) if k not in ["created_at", "updated_at"]}
+        sanitized = {
+            k: v for k, v in sorted(config_dict.items()) if k not in ["created_at", "updated_at"]
+        }
         serialized = json.dumps(sanitized, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
@@ -92,7 +94,9 @@ class ProductionConfigManager:
             models_dir = Path("storage/models")
             gguf_matches = list(models_dir.glob(f"*{model_id}*.gguf"))
             if not gguf_matches and not (models_dir / f"{model_id}.gguf").exists():
-                errors.append(f"Model file check failed: Model '{model_id}' GGUF file not found in storage/models/")
+                errors.append(
+                    f"Model file check failed: Model '{model_id}' GGUF file not found in storage/models/"
+                )
 
         is_valid = len(errors) == 0
         return is_valid, errors, validated_dict

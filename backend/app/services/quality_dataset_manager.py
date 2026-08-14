@@ -5,8 +5,8 @@ summarization, coding, question answering, classification) independent of evalua
 """
 
 import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any, Literal
 
 import structlog
@@ -20,7 +20,9 @@ DATASETS_DIR = Path("storage/datasets")
 class PromptItem(BaseModel):
     prompt_id: str
     prompt: str
-    category: Literal["reasoning", "summarization", "coding", "question_answering", "classification"]
+    category: Literal[
+        "reasoning", "summarization", "coding", "question_answering", "classification"
+    ]
     difficulty: Literal["easy", "medium", "hard"] = "medium"
     expected_behavior: dict[str, Any] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -47,6 +49,22 @@ class QualityDatasetManager:
         if list(self.target_dir.glob("*.json")):
             return
 
+        # Check if root datasets directory exists and sync manifests
+        root_datasets = Path("datasets")
+        if root_datasets.exists() and root_datasets != self.target_dir:
+            for src_file in root_datasets.glob("*.json"):
+                try:
+                    with open(src_file, encoding="utf-8") as f_src:
+                        data = json.load(f_src)
+                    out_file = self.target_dir / src_file.name
+                    with open(out_file, "w", encoding="utf-8") as f_dst:
+                        f_dst.write(json.dumps(data, indent=2))
+                except Exception:
+                    pass
+
+        if list(self.target_dir.glob("*.json")):
+            return
+
         now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         default_prompts = [
@@ -55,14 +73,20 @@ class QualityDatasetManager:
                 prompt="If all cats are mammals and all mammals are animals, are all cats animals?",
                 category="reasoning",
                 difficulty="easy",
-                expected_behavior={"expected_keywords": ["yes", "cats are animals"], "format": "text"},
+                expected_behavior={
+                    "expected_keywords": ["yes", "cats are animals"],
+                    "format": "text",
+                },
             ),
             PromptItem(
                 prompt_id="p-coding-1",
                 prompt="Write a Python function named `is_palindrome(s: str) -> bool` that checks if a string is a palindrome.",
                 category="coding",
                 difficulty="medium",
-                expected_behavior={"expected_keywords": ["def is_palindrome", "return"], "syntax_check": "python"},
+                expected_behavior={
+                    "expected_keywords": ["def is_palindrome", "return"],
+                    "syntax_check": "python",
+                },
             ),
             PromptItem(
                 prompt_id="p-qa-1",
@@ -76,7 +100,10 @@ class QualityDatasetManager:
                 prompt="Summarize the following in one sentence: ArmServe is an autonomous AI optimization platform designed for AWS Graviton ARM64 CPU inference infrastructure.",
                 category="summarization",
                 difficulty="easy",
-                expected_behavior={"max_sentence_count": 1, "expected_keywords": ["ArmServe", "ARM64"]},
+                expected_behavior={
+                    "max_sentence_count": 1,
+                    "expected_keywords": ["ArmServe", "ARM64"],
+                },
             ),
             PromptItem(
                 prompt_id="p-class-1",
@@ -99,7 +126,11 @@ class QualityDatasetManager:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(manifest.model_dump_json(indent=2))
 
-        logger.info("Seeded default quality evaluation dataset", dataset_id="eval-core-v1", count=len(default_prompts))
+        logger.info(
+            "Seeded default quality evaluation dataset",
+            dataset_id="eval-core-v1",
+            count=len(default_prompts),
+        )
 
     def save_dataset(self, manifest: DatasetManifest) -> Path:
         """Persist dataset manifest to disk."""

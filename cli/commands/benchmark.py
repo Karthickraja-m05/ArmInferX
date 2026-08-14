@@ -1,9 +1,8 @@
 """ArmServe CLI benchmark command group."""
 
-import json
 import httpx
-from rich.table import Table
 import typer
+from rich.table import Table
 
 from cli.formatting import get_console, print_error, print_json_output
 
@@ -15,8 +14,12 @@ benchmark_app = typer.Typer(
 
 @benchmark_app.command(name="run", help="Run real inference performance benchmark workload.")
 def benchmark_run(
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
-    iterations: int = typer.Option(10, "--iterations", "-i", help="Number of benchmark iterations."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
+    iterations: int = typer.Option(
+        10, "--iterations", "-i", help="Number of benchmark iterations."
+    ),
     warmup: int = typer.Option(3, "--warmup", "-w", help="Number of warmup iterations."),
     concurrency: int = typer.Option(1, "--concurrency", "-c", help="Concurrency worker level."),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
@@ -42,7 +45,11 @@ def benchmark_run(
             return
 
         console = get_console()
-        table = Table(title="ArmServe Production Benchmark Run Summary", title_style="bold magenta", show_header=True)
+        table = Table(
+            title="ArmServe Production Benchmark Run Summary",
+            title_style="bold magenta",
+            show_header=True,
+        )
         table.add_column("Benchmark Metric", style="cyan", no_wrap=True)
         table.add_column("Measured Value", style="bold green")
 
@@ -65,11 +72,15 @@ def benchmark_run(
         raise typer.Exit(code=1) from err
 
 
-@benchmark_app.command(name="compare", help="Compare two benchmark runs and compute metric variations.")
+@benchmark_app.command(
+    name="compare", help="Compare two benchmark runs and compute metric variations."
+)
 def benchmark_compare(
     run_a: str = typer.Argument(..., help="Baseline Benchmark Run ID (Run A)."),
     run_b: str = typer.Argument(..., help="Candidate Benchmark Run ID (Run B)."),
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """Compare two benchmark runs and compute metric variations."""
@@ -87,7 +98,13 @@ def benchmark_compare(
 
         console = get_console()
         verdict = data.get("verdict", "NEUTRAL")
-        verdict_color = "bold red" if verdict == "REGRESSED" else "bold green" if verdict == "IMPROVED" else "bold yellow"
+        verdict_color = (
+            "bold red"
+            if verdict == "REGRESSED"
+            else "bold green"
+            if verdict == "IMPROVED"
+            else "bold yellow"
+        )
 
         table = Table(
             title=f"ArmServe Performance Comparison: Baseline ({data.get('run_a_id')}) vs Candidate ({data.get('run_b_id')})",
@@ -103,7 +120,13 @@ def benchmark_compare(
 
         for item in data.get("comparisons", []):
             dir_str = item.get("direction", "UNCHANGED")
-            style = "bold green" if dir_str == "IMPROVED" else "bold red" if dir_str == "REGRESSED" else "dim"
+            style = (
+                "bold green"
+                if dir_str == "IMPROVED"
+                else "bold red"
+                if dir_str == "REGRESSED"
+                else "dim"
+            )
             table.add_row(
                 f"{item.get('metric_name')} ({item.get('unit')})",
                 str(item.get("run_a_value")),
@@ -123,11 +146,17 @@ def benchmark_compare(
         raise typer.Exit(code=1) from err
 
 
-@benchmark_app.command(name="report", help="Generate and print benchmark report in Markdown, JSON, or CSV format.")
+@benchmark_app.command(
+    name="report", help="Generate and print benchmark report in Markdown, JSON, or CSV format."
+)
 def benchmark_report(
     run_id: str = typer.Argument(..., help="Target Benchmark Run ID."),
-    format: str = typer.Option("markdown", "--format", "-f", help="Output report format (markdown, json, csv)."),
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    format: str = typer.Option(
+        "markdown", "--format", "-f", help="Output report format (markdown, json, csv)."
+    ),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
 ) -> None:
     """Generate and print benchmark report."""
     target_url = f"{url.rstrip('/')}/benchmarks/{run_id}/report?format={format}"
@@ -144,7 +173,9 @@ def benchmark_report(
 
 @benchmark_app.command(name="list", help="List historical benchmark run manifests.")
 def benchmark_list(
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """List historical benchmark run manifests."""
@@ -161,7 +192,11 @@ def benchmark_list(
             return
 
         console = get_console()
-        table = Table(title="ArmServe Historical Benchmark Manifests", title_style="bold cyan", show_header=True)
+        table = Table(
+            title="ArmServe Historical Benchmark Manifests",
+            title_style="bold cyan",
+            show_header=True,
+        )
         table.add_column("Run ID", style="bold yellow")
         table.add_column("Timestamp", style="dim")
         table.add_column("Requests", style="white")

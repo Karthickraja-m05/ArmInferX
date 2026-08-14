@@ -8,13 +8,12 @@ cost savings, active deployment details, and final optimization recommendations.
 import json
 import time
 from typing import Any, Literal
+
 import structlog
 
 from backend.app.schemas.performix import EvidenceReport
 from backend.app.services.deployment_version_manager import deployment_version_manager
-from backend.app.services.health_service import health_service
 from backend.app.services.performix_runner import performix_runner
-from backend.app.services.quality_scoring_engine import quality_scoring_engine
 
 logger = structlog.get_logger(__name__)
 
@@ -36,14 +35,29 @@ class OptimizationEvidenceGenerator:
 
         # Baseline vs Optimized Metrics
         baseline_p50 = 24.8  # Single-thread unoptimized baseline
-        optimized_p50 = latest_pmx.latency_p50_ms if latest_pmx else (active_dep.get("metrics_summary", {}).get("latency_p50_ms", 14.2) if active_dep else 14.2)
-        
+        optimized_p50 = (
+            latest_pmx.latency_p50_ms
+            if latest_pmx
+            else (
+                active_dep.get("metrics_summary", {}).get("latency_p50_ms", 14.2)
+                if active_dep
+                else 14.2
+            )
+        )
+
         gain_pct = round(((baseline_p50 - optimized_p50) / baseline_p50) * 100.0, 2)
         pmx_validated = latest_pmx is not None and latest_pmx.execution_status == "COMPLETED"
 
         if format_type == "json":
             content = self._build_json_report(
-                report_id, now_str, baseline_p50, optimized_p50, gain_pct, pmx_validated, active_dep, latest_pmx
+                report_id,
+                now_str,
+                baseline_p50,
+                optimized_p50,
+                gain_pct,
+                pmx_validated,
+                active_dep,
+                latest_pmx,
             )
         elif format_type == "csv":
             content = self._build_csv_report(
@@ -51,10 +65,22 @@ class OptimizationEvidenceGenerator:
             )
         else:
             content = self._build_markdown_report(
-                report_id, now_str, baseline_p50, optimized_p50, gain_pct, pmx_validated, active_dep, latest_pmx
+                report_id,
+                now_str,
+                baseline_p50,
+                optimized_p50,
+                gain_pct,
+                pmx_validated,
+                active_dep,
+                latest_pmx,
             )
 
-        logger.info("Generated optimization evidence report", report_id=report_id, fmt=format_type, gain=gain_pct)
+        logger.info(
+            "Generated optimization evidence report",
+            report_id=report_id,
+            fmt=format_type,
+            gain=gain_pct,
+        )
 
         return EvidenceReport(
             report_id=report_id,
@@ -85,10 +111,10 @@ class OptimizationEvidenceGenerator:
 
         return f"""# ArmServe Hackathon Submission: Official Optimization Evidence Report
 
-**Report ID**: `{report_id}`  
-**Generated At**: `{now_str}`  
-**Target Hardware**: AWS ARM64 Graviton3 (`c7g.2xlarge` / Neoverse V1)  
-**Official Arm Performix Validation**: **{"PASSED [VERIFIED]" if pmx_val else "PENDING"}**  
+**Report ID**: `{report_id}`
+**Generated At**: `{now_str}`
+**Target Hardware**: AWS ARM64 Graviton3 (`c7g.2xlarge` / Neoverse V1)
+**Official Arm Performix Validation**: **{"PASSED [VERIFIED]" if pmx_val else "PENDING"}**
 
 ---
 

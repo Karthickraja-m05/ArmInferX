@@ -1,13 +1,13 @@
 """Deployment Engine, Versioning, Health, and Monitoring REST API Router."""
 
 from typing import Any
+
 from fastapi import APIRouter, HTTPException, Query, status
 
 from backend.app.schemas.deployment import (
     ConfigComparisonRequest,
     ConfigComparisonResponse,
     DeploymentCreateRequest,
-    DeploymentEventResponse,
     DeploymentHealthCheckResponse,
     DeploymentMonitoringResponse,
     DeploymentResponse,
@@ -46,12 +46,12 @@ async def create_deployment(body: DeploymentCreateRequest) -> Any:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(val_err),
-        )
+        ) from val_err
     except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Deployment execution failed: {str(err)}",
-        )
+        ) from err
 
 
 @router.get(
@@ -100,18 +100,17 @@ async def get_active_deployment() -> Any:
     status_code=status.HTTP_200_OK,
     summary="Get Deployments Health Verification Summary",
 )
-async def get_deployments_health(
-    limit: int = Query(default=20, ge=1, le=100)
-) -> Any:
+async def get_deployments_health(limit: int = Query(default=20, ge=1, le=100)) -> Any:
     """Return recent deployment health verification history and status."""
     history = health_service.get_health_history(limit=limit)
     active = deployment_version_manager.get_active_deployment()
     return {
-        "status": "healthy" if (active and active.get("health_status") == "HEALTHY") else "degraded",
+        "status": "healthy"
+        if (active and active.get("health_status") == "HEALTHY")
+        else "degraded",
         "active_deployment_id": active["id"] if active else None,
         "health_history": history,
     }
-
 
 
 @router.get(
@@ -148,7 +147,7 @@ async def rollback_deployment(
     deployment_id: str, body: DeploymentRollbackRequest | None = None
 ) -> Any:
     """Rollback current deployment to previous working release."""
-    reason = body.reason if body else "Operator triggered rollback."
+    reason = (body.reason if (body and body.reason) else None) or "Operator triggered rollback."
     try:
         restored, curr = deployment_version_manager.execute_rollback(
             current_deployment_id=deployment_id, reason=reason
@@ -163,12 +162,12 @@ async def rollback_deployment(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(err),
-        )
+        ) from err
     except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Rollback failed: {str(err)}",
-        )
+        ) from err
 
 
 @router.post(
@@ -180,15 +179,17 @@ async def rollback_deployment(
 async def verify_deployment_health(deployment_id: str) -> Any:
     """Run 5-stage health verification on deployment."""
     report = await health_service.execute_full_health_verification(deployment_id)
+    from backend.app.schemas.deployment import StageVerificationDetail
+
     return DeploymentHealthCheckResponse(
         deployment_id=report.deployment_id,
         status=report.overall_status,
         is_healthy=report.is_healthy,
-        startup_check=report.startup_check.model_dump(),
-        model_check=report.model_check.model_dump(),
-        inference_check=report.inference_check.model_dump(),
-        endpoint_check=report.endpoint_check.model_dump(),
-        resource_check=report.resource_check.model_dump(),
+        startup_check=StageVerificationDetail(**report.startup_check.model_dump()),
+        model_check=StageVerificationDetail(**report.model_check.model_dump()),
+        inference_check=StageVerificationDetail(**report.inference_check.model_dump()),
+        endpoint_check=StageVerificationDetail(**report.endpoint_check.model_dump()),
+        resource_check=StageVerificationDetail(**report.resource_check.model_dump()),
     )
 
 

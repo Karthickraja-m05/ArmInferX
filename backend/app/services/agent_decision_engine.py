@@ -4,9 +4,8 @@ Evaluates current optimization snapshot telemetry against action rules and stopp
 (STOP_CONVERGED, STOP_MAX_EXPERIMENTS, EXECUTE_PLAN) with evidence-based reasoning.
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any, Literal
 
 import structlog
@@ -25,7 +24,9 @@ class ActionDecision(BaseModel):
     snapshot_id: str
     plan_id: str | None = None
     timestamp: str
-    action_type: Literal["EXECUTE_PLAN", "STOP_CONVERGED", "STOP_MAX_EXPERIMENTS", "STOP_SAFETY_GUARDRAIL"]
+    action_type: Literal[
+        "EXECUTE_PLAN", "STOP_CONVERGED", "STOP_MAX_EXPERIMENTS", "STOP_SAFETY_GUARDRAIL"
+    ]
     chosen_proposal_id: str | None = None
     target_configuration: dict[str, Any] | None = None
     reasoning: str
@@ -127,7 +128,10 @@ class AgentDecisionEngine:
             return dec
 
         # Stopping Rule 4: Quality Regression Safety Guardrail
-        if snapshot.latest_quality_score and snapshot.latest_quality_score < self.min_quality_threshold:
+        if (
+            snapshot.latest_quality_score
+            and snapshot.latest_quality_score < self.min_quality_threshold
+        ):
             dec = ActionDecision(
                 decision_id=decision_id,
                 snapshot_id=snapshot.snapshot_id,
@@ -175,4 +179,8 @@ class AgentDecisionEngine:
         out_file = self.target_dir / f"{decision.decision_id}.json"
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(decision.model_dump_json(indent=2))
-        logger.info("Persisted agent action decision", decision_id=decision.decision_id, action=decision.action_type)
+        logger.info(
+            "Persisted agent action decision",
+            decision_id=decision.decision_id,
+            action=decision.action_type,
+        )

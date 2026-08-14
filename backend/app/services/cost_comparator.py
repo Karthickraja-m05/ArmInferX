@@ -4,13 +4,11 @@ Compares cost estimates between Configuration A and Configuration B, computes ab
 percentage cost reductions, throughput per dollar efficiency, and persists ranked comparisons.
 """
 
-import json
-from pathlib import Path
 import time
-from typing import Any
+from pathlib import Path
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.services.cost_calculator import CostEstimate
 
@@ -76,7 +74,9 @@ class CostComparator:
                 f"(+{abs(pct_savings):.1f}% expense) compared to baseline."
             )
         else:
-            reason = f"Configuration '{target.config_id}' has identical cost efficiency to baseline."
+            reason = (
+                f"Configuration '{target.config_id}' has identical cost efficiency to baseline."
+            )
 
         report = CostComparisonReport(
             comparison_id=comp_id,
@@ -100,7 +100,12 @@ class CostComparator:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(report.model_dump_json(indent=2))
 
-        logger.info("Completed cost comparison", comp_id=comp_id, savings_pct=pct_savings, effective=more_effective)
+        logger.info(
+            "Completed cost comparison",
+            comp_id=comp_id,
+            savings_pct=pct_savings,
+            effective=more_effective,
+        )
         return report
 
     def rank_configurations_by_cost(self, estimates: list[CostEstimate]) -> list[CostEstimate]:

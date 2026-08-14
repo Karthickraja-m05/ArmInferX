@@ -1,11 +1,10 @@
 """ArmServe System & Inference Telemetry Metrics Collection Engine."""
 
 import time
-from typing import Any
 
 import psutil
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.core.config import settings
 
@@ -76,7 +75,9 @@ class MetricsCollector:
         )
 
     @staticmethod
-    def capture_runtime_metrics(active_model: str = "qwen2.5-0.5b-instruct") -> RuntimeMetricsSnapshot:
+    def capture_runtime_metrics(
+        active_model: str = "qwen2.5-0.5b-instruct",
+    ) -> RuntimeMetricsSnapshot:
         """Capture active inference runtime settings."""
         now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ")
         return RuntimeMetricsSnapshot(

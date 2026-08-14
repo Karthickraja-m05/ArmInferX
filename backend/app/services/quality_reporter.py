@@ -8,7 +8,6 @@ import csv
 import io
 import json
 from pathlib import Path
-import time
 from typing import Any
 
 import structlog
@@ -55,38 +54,42 @@ class QualityReporter:
             status = "✅ PASS" if score >= 75.0 else "⚠️ WARN"
             lines.append(f"| `{dim}` | **{score:.1f}%** | {status} |")
 
-        lines.extend([
-            "",
-            "## 2. Category Score Breakdown",
-            "",
-            "| Evaluation Category | Measured Score |",
-            "|---|---|",
-        ])
+        lines.extend(
+            [
+                "",
+                "## 2. Category Score Breakdown",
+                "",
+                "| Evaluation Category | Measured Score |",
+                "|---|---|",
+            ]
+        )
 
         for cat, score in eval_report.category_scores.items():
             lines.append(f"| `{cat}` | **{score:.1f}%** |")
 
         if comp_report:
-            lines.extend([
-                "",
-                "---",
-                "",
-                "## 3. Baseline Comparison Summary",
-                "",
-                f"- **Baseline Config ID**: `{comp_report.baseline_config_id}`",
-                f"- **Baseline Quality Score**: {comp_report.baseline_overall_score} / 100.0",
-                f"- **Target Quality Score**: {comp_report.target_overall_score} / 100.0",
-                f"- **Score Difference ($\Delta Q$)**: `{comp_report.score_difference:+.2f}` ({comp_report.percentage_change:+.2f}%)",
-                f"- **Regression Status**: {'⚠️ REGRESSION DETECTED' if comp_report.has_regression else '✅ NO REGRESSION'}",
-                f"- **Deployment Decision**: {'❌ REJECTED' if comp_report.rejected_due_to_degradation else '✅ APPROVED'}",
-                "",
-                f"> **Evidence-Based Reasoning**: {comp_report.summary_reasoning}",
-                "",
-                "### Category Differences ($\Delta$ Baseline)",
-                "",
-                "| Category | Baseline Score | Target Score | $\Delta$ Change | Status |",
-                "|---|---|---|---|---|",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "---",
+                    "",
+                    "## 3. Baseline Comparison Summary",
+                    "",
+                    f"- **Baseline Config ID**: `{comp_report.baseline_config_id}`",
+                    f"- **Baseline Quality Score**: {comp_report.baseline_overall_score} / 100.0",
+                    f"- **Target Quality Score**: {comp_report.target_overall_score} / 100.0",
+                    rf"- **Score Difference ($\Delta Q$)**: `{comp_report.score_difference:+.2f}` ({comp_report.percentage_change:+.2f}%)",
+                    f"- **Regression Status**: {'⚠️ REGRESSION DETECTED' if comp_report.has_regression else '✅ NO REGRESSION'}",
+                    f"- **Deployment Decision**: {'❌ REJECTED' if comp_report.rejected_due_to_degradation else '✅ APPROVED'}",
+                    "",
+                    f"> **Evidence-Based Reasoning**: {comp_report.summary_reasoning}",
+                    "",
+                    r"### Category Differences ($\Delta$ Baseline)",
+                    "",
+                    r"| Category | Baseline Score | Target Score | $\Delta$ Change | Status |",
+                    "|---|---|---|---|---|",
+                ]
+            )
 
             for item in comp_report.detailed_category_deltas:
                 lines.append(
@@ -94,15 +97,17 @@ class QualityReporter:
                     f"`{item['difference']:+.1f}%` | {item['status']} |"
                 )
 
-        lines.extend([
-            "",
-            "---",
-            "",
-            "## 4. Evaluated Prompt Audit",
-            "",
-            "| Prompt ID | Category | Total Score | Correctness | Completeness | Formatting | Result |",
-            "|---|---|---|---|---|---|---|",
-        ])
+        lines.extend(
+            [
+                "",
+                "---",
+                "",
+                "## 4. Evaluated Prompt Audit",
+                "",
+                "| Prompt ID | Category | Total Score | Correctness | Completeness | Formatting | Result |",
+                "|---|---|---|---|---|---|---|",
+            ]
+        )
 
         for ps in eval_report.prompt_scores:
             res_str = "✅ PASS" if ps.passed else "❌ FAIL"
@@ -143,34 +148,38 @@ class QualityReporter:
         writer = csv.writer(output)
 
         # Header
-        writer.writerow([
-            "evaluation_id",
-            "config_id",
-            "experiment_id",
-            "prompt_id",
-            "category",
-            "total_score",
-            "correctness_score",
-            "completeness_score",
-            "instruction_score",
-            "formatting_score",
-            "passed",
-        ])
+        writer.writerow(
+            [
+                "evaluation_id",
+                "config_id",
+                "experiment_id",
+                "prompt_id",
+                "category",
+                "total_score",
+                "correctness_score",
+                "completeness_score",
+                "instruction_score",
+                "formatting_score",
+                "passed",
+            ]
+        )
 
         for ps in eval_report.prompt_scores:
-            writer.writerow([
-                eval_report.evaluation_id,
-                eval_report.config_id,
-                eval_report.experiment_id,
-                ps.prompt_id,
-                ps.category,
-                ps.total_prompt_score,
-                ps.correctness_score,
-                ps.completeness_score,
-                ps.instruction_score,
-                ps.formatting_score,
-                ps.passed,
-            ])
+            writer.writerow(
+                [
+                    eval_report.evaluation_id,
+                    eval_report.config_id,
+                    eval_report.experiment_id,
+                    ps.prompt_id,
+                    ps.category,
+                    ps.total_prompt_score,
+                    ps.correctness_score,
+                    ps.completeness_score,
+                    ps.instruction_score,
+                    ps.formatting_score,
+                    ps.passed,
+                ]
+            )
 
         content = output.getvalue()
         out_file = self.target_dir / f"report_{eval_report.evaluation_id}.csv"

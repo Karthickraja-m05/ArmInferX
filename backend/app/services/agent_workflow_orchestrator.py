@@ -4,13 +4,12 @@ Executes end-to-end autonomous optimization cycles (Observation -> Planning -> D
 Execution -> Benchmarking -> Quality Evaluation -> Cost Analysis -> Scoring -> Recommendation).
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.services.agent_decision_engine import AgentDecision, AgentDecisionEngine
 from backend.app.services.agent_observation_engine import AgentObservationEngine, AgentStateSnapshot
@@ -98,8 +97,12 @@ class AgentWorkflowOrchestrator:
             "current_step": self._current_step,
             "max_steps": self._max_steps,
             "stop_requested": self._stop_requested,
-            "latest_workflow_id": self._latest_workflow.workflow_id if self._latest_workflow else None,
-            "latest_best_score": self._latest_workflow.best_utility_score if self._latest_workflow else None,
+            "latest_workflow_id": self._latest_workflow.workflow_id
+            if self._latest_workflow
+            else None,
+            "latest_best_score": self._latest_workflow.best_utility_score
+            if self._latest_workflow
+            else None,
         }
 
     def request_stop(self) -> dict[str, Any]:
@@ -107,7 +110,10 @@ class AgentWorkflowOrchestrator:
         if not self._is_running:
             return {"status": "NOT_RUNNING", "message": "Optimization Agent is currently idle."}
         self._stop_requested = True
-        logger.info("Stop signal sent to Autonomous Optimization Agent", workflow_id=self._active_workflow_id)
+        logger.info(
+            "Stop signal sent to Autonomous Optimization Agent",
+            workflow_id=self._active_workflow_id,
+        )
         return {
             "status": "STOP_REQUESTED",
             "workflow_id": self._active_workflow_id,
@@ -151,7 +157,9 @@ class AgentWorkflowOrchestrator:
 
                 if self._stop_requested:
                     stopping_reason = "User requested manual abort."
-                    logger.info("Autonomous agent stopped by user request", workflow_id=wf_id, step=step_idx)
+                    logger.info(
+                        "Autonomous agent stopped by user request", workflow_id=wf_id, step=step_idx
+                    )
                     break
 
                 # 1. Observe state
@@ -159,7 +167,9 @@ class AgentWorkflowOrchestrator:
                     active_model_id=target_model_id,
                     top_ranked_config_id=best_cfg_id,
                     latest_quality_score=step_records[-1].quality_score if step_records else None,
-                    latest_cost_per_1m_tokens=step_records[-1].cost_per_1m_tokens if step_records else None,
+                    latest_cost_per_1m_tokens=step_records[-1].cost_per_1m_tokens
+                    if step_records
+                    else None,
                 )
 
                 # 2. Generate plan
@@ -206,8 +216,12 @@ class AgentWorkflowOrchestrator:
                 if isinstance(exp_result, dict):
                     exp_id = exp_result.get("experiment_id", f"exp-{step_idx}")
                     bench_result = exp_result.get("benchmark_result", {})
-                    metrics_summary = bench_result.get("metrics_summary", {}) or exp_result.get("metrics_summary", {})
-                    bench_id = bench_result.get("benchmark_id") or exp_result.get("benchmark_run_id", f"bench-{step_idx}")
+                    metrics_summary = bench_result.get("metrics_summary", {}) or exp_result.get(
+                        "metrics_summary", {}
+                    )
+                    bench_id = bench_result.get("benchmark_id") or exp_result.get(
+                        "benchmark_run_id", f"bench-{step_idx}"
+                    )
                 else:
                     exp_id = getattr(exp_result, "experiment_id", f"exp-{step_idx}")
                     metrics_summary = getattr(exp_result, "metrics_summary", {}) or {}
@@ -249,15 +263,12 @@ class AgentWorkflowOrchestrator:
                 }
                 norm_runs = self.normalizer.normalize_benchmark_runs([run_item])
                 score_item = self.scoring_engine.compute_experiment_score(norm_runs[0])
-                u_score = getattr(
-                    score_item,
-                    "total_score",
-                    getattr(
-                        score_item,
-                        "total_utility_score",
-                        score_item.get("total_score", 0.0) if isinstance(score_item, dict) else 0.0,
-                    ),
-                )
+                if isinstance(score_item, dict):
+                    u_score = float(score_item.get("total_score", 0.0))
+                else:
+                    u_score = getattr(
+                        score_item, "total_score", getattr(score_item, "total_utility_score", 0.0)
+                    )
 
                 historical_scores.append(u_score)
                 if best_score is None or u_score > best_score:
@@ -292,7 +303,10 @@ class AgentWorkflowOrchestrator:
 
             # Generate explainable recommendation
             try:
-                from backend.app.services.agent_recommendation_engine import AgentRecommendationEngine
+                from backend.app.services.agent_recommendation_engine import (
+                    AgentRecommendationEngine,
+                )
+
                 agent_rec_engine = AgentRecommendationEngine()
                 rec_report = agent_rec_engine.generate_recommendation(wf_record)
                 wf_record.recommendation_id = rec_report.recommendation_id
@@ -328,7 +342,7 @@ class AgentWorkflowOrchestrator:
         target_file = self.target_dir / f"{workflow_id}.json"
         if not target_file.exists():
             return None
-        with open(target_file, "r", encoding="utf-8") as f:
+        with open(target_file, encoding="utf-8") as f:
             return WorkflowExecutionRecord.model_validate_json(f.read())
 
     def list_workflows(
@@ -344,7 +358,7 @@ class AgentWorkflowOrchestrator:
         results: list[WorkflowExecutionRecord] = []
         for file in files:
             try:
-                with open(file, "r", encoding="utf-8") as f:
+                with open(file, encoding="utf-8") as f:
                     rec = WorkflowExecutionRecord.model_validate_json(f.read())
                     if target_model_id and rec.target_model_id != target_model_id:
                         continue

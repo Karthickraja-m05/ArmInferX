@@ -5,10 +5,9 @@ throughput, token counts, and environment metadata, and persists benchmark manif
 """
 
 import asyncio
-import json
-from pathlib import Path
 import platform
 import time
+from pathlib import Path
 
 import httpx
 import psutil
@@ -87,7 +86,12 @@ class BenchmarkRunner:
             if res.status_code == 200:
                 body = res.json()
                 usage = body.get("usage", {})
-                return True, latency_ms, usage.get("prompt_tokens", 20), usage.get("completion_tokens", 27)
+                return (
+                    True,
+                    latency_ms,
+                    usage.get("prompt_tokens", 20),
+                    usage.get("completion_tokens", 27),
+                )
             return False, latency_ms, 0, 0
         except Exception as err:
             latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -104,7 +108,12 @@ class BenchmarkRunner:
     async def run_benchmark(self) -> BenchmarkRunResult:
         """Execute full benchmark workload with warmup, concurrency, and telemetry capture."""
         run_id = f"bench-{int(time.time())}"
-        logger.info("Starting benchmark run", run_id=run_id, iterations=self.config.iterations, concurrency=self.config.concurrency)
+        logger.info(
+            "Starting benchmark run",
+            run_id=run_id,
+            iterations=self.config.iterations,
+            concurrency=self.config.concurrency,
+        )
 
         async with httpx.AsyncClient() as client:
             # 1. Warmup Iterations
@@ -115,12 +124,11 @@ class BenchmarkRunner:
 
             # 2. Benchmark Iterations
             start_wall = time.perf_counter()
-            tasks = []
-            
+
             # Divide iterations into concurrent batches
             sem = asyncio.Semaphore(self.config.concurrency)
 
-            async def worker():
+            async def worker() -> tuple[bool, float, int, int]:
                 async with sem:
                     return await self._send_single_request(client)
 

@@ -1,12 +1,11 @@
 """ArmServe Benchmark Run Comparison & Regression Detection Engine."""
 
 import json
-from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from backend.app.services.benchmark_runner import BENCHMARKS_DIR, BenchmarkRunResult
+from backend.app.services.benchmark_runner import BENCHMARKS_DIR
 
 
 class MetricComparison(BaseModel):
@@ -46,7 +45,8 @@ class BenchmarkComparator:
             file_path = matches[0]
 
         with open(file_path, encoding="utf-8") as f:
-            return json.load(f)
+            data: dict[str, Any] = json.load(f)
+            return data
 
     @classmethod
     def compare_runs(cls, run_a_id: str, run_b_id: str) -> BenchmarkComparisonReport:
@@ -109,27 +109,81 @@ class BenchmarkComparator:
             )
 
         # Evaluate Latencies (Lower is better)
-        comparisons.append(eval_metric("P50 Latency", "ms", data_a.get("latency_p50_ms", 0), data_b.get("latency_p50_ms", 0), lower_is_better=True))
-        comparisons.append(eval_metric("P90 Latency", "ms", data_a.get("latency_p90_ms", 0), data_b.get("latency_p90_ms", 0), lower_is_better=True))
-        comparisons.append(eval_metric("P99 Latency", "ms", data_a.get("latency_p99_ms", 0), data_b.get("latency_p99_ms", 0), lower_is_better=True))
+        comparisons.append(
+            eval_metric(
+                "P50 Latency",
+                "ms",
+                data_a.get("latency_p50_ms", 0),
+                data_b.get("latency_p50_ms", 0),
+                lower_is_better=True,
+            )
+        )
+        comparisons.append(
+            eval_metric(
+                "P90 Latency",
+                "ms",
+                data_a.get("latency_p90_ms", 0),
+                data_b.get("latency_p90_ms", 0),
+                lower_is_better=True,
+            )
+        )
+        comparisons.append(
+            eval_metric(
+                "P99 Latency",
+                "ms",
+                data_a.get("latency_p99_ms", 0),
+                data_b.get("latency_p99_ms", 0),
+                lower_is_better=True,
+            )
+        )
 
         # Evaluate Throughput (Higher is better)
-        comparisons.append(eval_metric("Requests Per Second", "req/s", data_a.get("requests_per_second", 0), data_b.get("requests_per_second", 0), lower_is_better=False))
-        comparisons.append(eval_metric("Tokens Per Second", "tok/s", data_a.get("tokens_per_second", 0), data_b.get("tokens_per_second", 0), lower_is_better=False))
+        comparisons.append(
+            eval_metric(
+                "Requests Per Second",
+                "req/s",
+                data_a.get("requests_per_second", 0),
+                data_b.get("requests_per_second", 0),
+                lower_is_better=False,
+            )
+        )
+        comparisons.append(
+            eval_metric(
+                "Tokens Per Second",
+                "tok/s",
+                data_a.get("tokens_per_second", 0),
+                data_b.get("tokens_per_second", 0),
+                lower_is_better=False,
+            )
+        )
 
         # Evaluate Memory Usage (Lower is better)
-        comparisons.append(eval_metric("Peak Memory", "MB", data_a.get("peak_memory_mb", 0), data_b.get("peak_memory_mb", 0), lower_is_better=True))
+        comparisons.append(
+            eval_metric(
+                "Peak Memory",
+                "MB",
+                data_a.get("peak_memory_mb", 0),
+                data_b.get("peak_memory_mb", 0),
+                lower_is_better=True,
+            )
+        )
 
         # Determine overall verdict
         if regressions_count > 0:
             verdict = "REGRESSED"
-            summary_notes.append(f"Detected {regressions_count} performance regression(s) exceeding {5.0}% threshold.")
+            summary_notes.append(
+                f"Detected {regressions_count} performance regression(s) exceeding {5.0}% threshold."
+            )
         elif improvements_count > 0:
             verdict = "IMPROVED"
-            summary_notes.append(f"Measured {improvements_count} performance improvement(s) in candidate run B.")
+            summary_notes.append(
+                f"Measured {improvements_count} performance improvement(s) in candidate run B."
+            )
         else:
             verdict = "NEUTRAL"
-            summary_notes.append("No statistically significant performance variation detected between runs.")
+            summary_notes.append(
+                "No statistically significant performance variation detected between runs."
+            )
 
         return BenchmarkComparisonReport(
             run_a_id=data_a.get("run_id", run_a_id),

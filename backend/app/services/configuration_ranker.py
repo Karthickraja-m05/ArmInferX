@@ -4,15 +4,18 @@ Sorts experiment configurations using composite utility scores, SLA constraint c
 and deterministic tie-breaking rules (lower memory > lower thread count). Exports ranked Top-10 lists.
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from backend.app.services.constraint_engine import ConstraintEngine, ConstraintEvaluationResult, ConstraintSpec
+from backend.app.services.constraint_engine import (
+    ConstraintEngine,
+    ConstraintEvaluationResult,
+    ConstraintSpec,
+)
 from backend.app.services.metrics_normalizer import MetricsNormalizer
 from backend.app.services.scoring_engine import ObjectiveWeights, ScoreBreakdown, ScoringEngine
 
@@ -168,5 +171,9 @@ class ConfigurationRanker:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(report.model_dump_json(indent=2))
 
-        logger.info("Generated configuration ranking report", ranking_id=ranking_id, top_count=len(top_items))
+        logger.info(
+            "Generated configuration ranking report",
+            ranking_id=ranking_id,
+            top_count=len(top_items),
+        )
         return report

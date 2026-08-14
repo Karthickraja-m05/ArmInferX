@@ -1,8 +1,8 @@
 """Backend Runtime Integration & Model Lifecycle API Router."""
 
+import structlog
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
-import structlog
 
 from backend.app.services.inference_engine import (
     ChatCompletionRequest,
@@ -42,10 +42,14 @@ async def discover_models() -> dict[str, list[dict]]:
 async def execute_inference(payload: InferenceRequestPayload) -> dict:
     """Send inference request to the real inference runtime."""
     try:
-        logger.info("Handling direct inference request", prompt_len=len(payload.prompt), model=payload.model)
+        logger.info(
+            "Handling direct inference request", prompt_len=len(payload.prompt), model=payload.model
+        )
+        from backend.app.services.inference_engine import ChatMessage
+
         chat_req = ChatCompletionRequest(
             model=payload.model,
-            messages=[{"role": "user", "content": payload.prompt}],
+            messages=[ChatMessage(role="user", content=payload.prompt)],
             temperature=payload.temperature,
             max_tokens=payload.max_tokens,
             top_p=payload.top_p,

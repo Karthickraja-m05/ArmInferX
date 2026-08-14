@@ -6,9 +6,10 @@ and model deployments while measuring throughput, queue depth, and utilization.
 
 import asyncio
 import time
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 import structlog
 
@@ -97,7 +98,9 @@ class ScalabilityManager:
     def __init__(self) -> None:
         self.limiters: dict[WorkloadType, ConcurrencyLimiter] = {
             WorkloadType.EXPERIMENT: ConcurrencyLimiter(max_concurrent_jobs=4, max_queue_depth=32),
-            WorkloadType.OPTIMIZATION: ConcurrencyLimiter(max_concurrent_jobs=4, max_queue_depth=32),
+            WorkloadType.OPTIMIZATION: ConcurrencyLimiter(
+                max_concurrent_jobs=4, max_queue_depth=32
+            ),
             WorkloadType.DEPLOYMENT: ConcurrencyLimiter(max_concurrent_jobs=4, max_queue_depth=32),
             WorkloadType.BENCHMARK: ConcurrencyLimiter(max_concurrent_jobs=8, max_queue_depth=64),
         }
@@ -118,7 +121,9 @@ class ScalabilityManager:
                 status_code=429,
                 endpoint=f"workload:{workload_type.value}",
             )
-            raise RuntimeError(f"Workload queue saturated for {workload_type.value}. Try again later.")
+            raise RuntimeError(
+                f"Workload queue saturated for {workload_type.value}. Try again later."
+            )
 
         t0 = time.perf_counter()
         try:

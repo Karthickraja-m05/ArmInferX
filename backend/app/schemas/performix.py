@@ -1,6 +1,7 @@
 """Pydantic schemas for Arm Performix integration, correlation, and evidence generation."""
 
-from typing import Any, Literal
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 

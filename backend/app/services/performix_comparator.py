@@ -5,14 +5,13 @@ computing metric variance, consistency scores, and comparison summary reports.
 """
 
 import time
+
 import structlog
 
 from backend.app.schemas.performix import (
     MetricComparison,
     PerformixComparisonResult,
-    PerformixRunResult,
 )
-from backend.app.services.benchmark_runner import BenchmarkRunner
 from backend.app.services.performix_runner import performix_runner
 
 logger = structlog.get_logger(__name__)
@@ -29,8 +28,10 @@ class PerformixComparator:
         pmx_run = performix_runner.get_result(performix_run_id)
 
         # Load or generate baseline ArmServe metrics
+        from backend.app.services.benchmark_comparator import BenchmarkComparator
+
         try:
-            arm_manifest = BenchmarkRunner.load_run_manifest(armserve_run_id)
+            arm_manifest = BenchmarkComparator.load_run_manifest(armserve_run_id)
             arm_p50 = float(arm_manifest.get("latency_p50_ms", 14.2))
             arm_p99 = float(arm_manifest.get("latency_p99_ms", 42.1))
             arm_tps = float(arm_manifest.get("tokens_per_second", 384.2))
@@ -47,19 +48,33 @@ class PerformixComparator:
             arm_ram = 1482.0
 
         comparisons: list[MetricComparison] = [
-            self._compare_metric("P50 Latency (ms)", arm_p50, pmx_run.latency_p50_ms, lower_is_better=True),
-            self._compare_metric("P99 Latency (ms)", arm_p99, pmx_run.latency_p99_ms, lower_is_better=True),
-            self._compare_metric("Throughput (TPS)", arm_tps, pmx_run.tokens_per_second, lower_is_better=False),
-            self._compare_metric("Request Rate (RPS)", arm_rps, pmx_run.requests_per_second, lower_is_better=False),
-            self._compare_metric("CPU Utilization (%)", arm_cpu, pmx_run.cpu_percent, lower_is_better=True),
-            self._compare_metric("RAM Memory (MB)", arm_ram, pmx_run.memory_used_mb, lower_is_better=True),
+            self._compare_metric(
+                "P50 Latency (ms)", arm_p50, pmx_run.latency_p50_ms, lower_is_better=True
+            ),
+            self._compare_metric(
+                "P99 Latency (ms)", arm_p99, pmx_run.latency_p99_ms, lower_is_better=True
+            ),
+            self._compare_metric(
+                "Throughput (TPS)", arm_tps, pmx_run.tokens_per_second, lower_is_better=False
+            ),
+            self._compare_metric(
+                "Request Rate (RPS)", arm_rps, pmx_run.requests_per_second, lower_is_better=False
+            ),
+            self._compare_metric(
+                "CPU Utilization (%)", arm_cpu, pmx_run.cpu_percent, lower_is_better=True
+            ),
+            self._compare_metric(
+                "RAM Memory (MB)", arm_ram, pmx_run.memory_used_mb, lower_is_better=True
+            ),
         ]
 
-        overall_var = round(
-            sum(m.variance_percent for m in comparisons) / len(comparisons), 2
-        )
+        overall_var = round(sum(m.variance_percent for m in comparisons) / len(comparisons), 2)
         overall_consistency = round(max(0.0, min(100.0, 100.0 - min(100.0, overall_var))), 2)
-        verdict = "VERIFIED_HIGH_CONSISTENCY" if overall_consistency >= 90.0 else "VERIFIED_MODERATE_CONSISTENCY"
+        verdict = (
+            "VERIFIED_HIGH_CONSISTENCY"
+            if overall_consistency >= 90.0
+            else "VERIFIED_MODERATE_CONSISTENCY"
+        )
 
         now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -92,7 +107,6 @@ class PerformixComparator:
         var_pct = round(min(100.0, (abs(diff) / denom) * 100.0), 2)
         consistency = round(max(0.0, 100.0 - var_pct), 2)
         rating = "High Consistency" if consistency >= 90.0 else "Moderate Consistency"
-
 
         return MetricComparison(
             metric_name=name,

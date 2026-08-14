@@ -4,7 +4,6 @@ Performs multi-stage health verification (startup, model loading, inference toke
 endpoint probes, resource bounds) and records health history and availability telemetry.
 """
 
-import logging
 import time
 from typing import Any
 
@@ -17,7 +16,6 @@ from backend.app.services.inference_engine import inference_engine
 from backend.app.services.runtime_manager import runtime_manager
 
 logger = structlog.get_logger(__name__)
-
 
 
 class StageVerificationRecord(BaseModel):
@@ -55,7 +53,11 @@ class ServiceHealthManager:
             db_res = await check_database_health()
             dur = (time.perf_counter() - t0) * 1000.0
             db_status = db_res.get("status") == "healthy"
-            msg = "Process running cleanly; DB connected." if db_status else "Process running; DB connection degraded."
+            msg = (
+                "Process running cleanly; DB connected."
+                if db_status
+                else "Process running; DB connection degraded."
+            )
             return StageVerificationRecord(
                 stage="startup",
                 passed=db_status,
@@ -158,7 +160,9 @@ class ServiceHealthManager:
         dur = (time.perf_counter() - t0) * 1000.0
 
         is_healthy = cpu_pct < 95.0 and mem_pct < 95.0
-        msg = f"Resources healthy: CPU={cpu_pct}%, RAM={mem_pct}% ({round(mem.used/1e6, 1)}MB used)."
+        msg = (
+            f"Resources healthy: CPU={cpu_pct}%, RAM={mem_pct}% ({round(mem.used/1e6, 1)}MB used)."
+        )
         if not is_healthy:
             msg = f"Resource limit exceeded: CPU={cpu_pct}%, RAM={mem_pct}%."
 
@@ -184,7 +188,9 @@ class ServiceHealthManager:
         total_dur = (time.perf_counter() - t0) * 1000.0
 
         all_passed = all([s1.passed, s2.passed, s3.passed, s4.passed, s5.passed])
-        overall_status = "HEALTHY" if all_passed else ("DEGRADED" if (s1.passed and s2.passed) else "UNHEALTHY")
+        overall_status = (
+            "HEALTHY" if all_passed else ("DEGRADED" if (s1.passed and s2.passed) else "UNHEALTHY")
+        )
 
         report = FullHealthVerificationReport(
             deployment_id=str(deployment_id),
@@ -213,7 +219,9 @@ class ServiceHealthManager:
 
         return report
 
-    def toggle_maintenance_mode(self, enabled: bool, reason: str = "Scheduled System Maintenance") -> bool:
+    def toggle_maintenance_mode(
+        self, enabled: bool, reason: str = "Scheduled System Maintenance"
+    ) -> bool:
         """Toggle system-wide maintenance mode."""
         self._maintenance_mode = enabled
         self._maintenance_reason = reason if enabled else None

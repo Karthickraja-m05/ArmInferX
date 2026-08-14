@@ -5,9 +5,8 @@ optimization rankings, quality evaluation reports, cost calculations, system res
 into structured, immutable state snapshots.
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import psutil
@@ -82,8 +81,12 @@ class AgentObservationEngine:
         qual_files = list(Path("storage/quality/evaluations").glob("*.json"))
         cost_files = list(Path("storage/cost/calculations").glob("*.json"))
 
-        recent_exp_ids = [f.stem for f in sorted(exp_files, key=lambda p: p.stat().st_mtime, reverse=True)[:5]]
-        recent_bench_ids = [f.stem for f in sorted(bench_files, key=lambda p: p.stat().st_mtime, reverse=True)[:5]]
+        recent_exp_ids = [
+            f.stem for f in sorted(exp_files, key=lambda p: p.stat().st_mtime, reverse=True)[:5]
+        ]
+        recent_bench_ids = [
+            f.stem for f in sorted(bench_files, key=lambda p: p.stat().st_mtime, reverse=True)[:5]
+        ]
 
         runtime_cfg = {
             "model_path": settings.runtime.model_path,
@@ -116,5 +119,9 @@ class AgentObservationEngine:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(snapshot.model_dump_json(indent=2))
 
-        logger.info("Captured agent observation state snapshot", snapshot_id=obs_id, exp_count=len(exp_files))
+        logger.info(
+            "Captured agent observation state snapshot",
+            snapshot_id=obs_id,
+            exp_count=len(exp_files),
+        )
         return snapshot

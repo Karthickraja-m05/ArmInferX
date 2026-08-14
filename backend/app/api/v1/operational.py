@@ -12,7 +12,7 @@ Exposes secure, authorized, filtered, and paginated diagnostic endpoints:
 import time
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query, Request, Response, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import PlainTextResponse
 
 from backend.app.core.config import ArmServeSettings
@@ -46,7 +46,9 @@ async def get_operational_status(
 
     is_maint = health_service.is_maintenance_mode
 
-    overall_status = "MAINTENANCE" if is_maint else ("HEALTHY" if db_status == "HEALTHY" else "DEGRADED")
+    overall_status = (
+        "MAINTENANCE" if is_maint else ("HEALTHY" if db_status == "HEALTHY" else "DEGRADED")
+    )
 
     return {
         "status": overall_status,
@@ -82,9 +84,7 @@ async def get_operational_metrics(
 
     summary = metrics_collector.get_summary()
     summary["workload_queues"] = scalability_manager.get_scalability_metrics()
-    summary["circuit_breakers"] = {
-        name: cb.get_status() for name, cb in circuit_breakers.items()
-    }
+    summary["circuit_breakers"] = {name: cb.get_status() for name, cb in circuit_breakers.items()}
     return summary
 
 
@@ -130,8 +130,12 @@ async def get_operational_logs(
     description="Query active and historical platform alerts with severity filtering and pagination.",
 )
 async def get_operational_alerts(
-    severity: str | None = Query(None, description="Alert severity filter (CRITICAL, HIGH, MEDIUM, INFO)"),
-    status_filter: str | None = Query(None, alias="status", description="Alert status filter (ACTIVE, RESOLVED)"),
+    severity: str | None = Query(
+        None, description="Alert severity filter (CRITICAL, HIGH, MEDIUM, INFO)"
+    ),
+    status_filter: str | None = Query(
+        None, alias="status", description="Alert status filter (ACTIVE, RESOLVED)"
+    ),
     component: str | None = Query(None, description="Component filter"),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(50, ge=1, le=200, description="Page size"),
@@ -181,7 +185,9 @@ async def get_operational_diagnostics(
 )
 async def toggle_maintenance(
     enabled: bool = Query(..., description="Maintenance mode enabled flag"),
-    reason: str = Query("Scheduled Maintenance Window", description="Reason for maintenance window"),
+    reason: str = Query(
+        "Scheduled Maintenance Window", description="Reason for maintenance window"
+    ),
     auth: AuthContext = Depends(get_default_auth_context),
 ) -> dict[str, Any]:
     """Toggle maintenance mode."""

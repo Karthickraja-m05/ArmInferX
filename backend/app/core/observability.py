@@ -6,9 +6,9 @@ request lifecycles, structured log buffer & persistent log querying, and operati
 
 import asyncio
 import json
-from pathlib import Path
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
 import structlog
@@ -21,7 +21,12 @@ OBSERVABILITY_DIR = Path("storage/observability")
 class TraceContext:
     """Distributed tracing context container."""
 
-    def __init__(self, trace_id: str | None = None, span_id: str | None = None, parent_span_id: str | None = None):
+    def __init__(
+        self,
+        trace_id: str | None = None,
+        span_id: str | None = None,
+        parent_span_id: str | None = None,
+    ):
         self.trace_id = trace_id or str(uuid.uuid4())
         self.span_id = span_id or str(uuid.uuid4())[:16]
         self.parent_span_id = parent_span_id
@@ -106,7 +111,7 @@ class ObservabilityStore:
         if self.log_file.exists() and len(logs_to_search) < (offset + limit):
             try:
                 file_logs = []
-                with open(self.log_file, "r", encoding="utf-8") as f:
+                with open(self.log_file, encoding="utf-8") as f:
                     for line in f:
                         if line.strip():
                             file_logs.append(json.loads(line.strip()))
@@ -117,17 +122,18 @@ class ObservabilityStore:
         # Apply Filters
         filtered = logs_to_search
         if level:
-            filtered = [l for l in filtered if l.get("level") == level.upper()]
+            filtered = [log_item for log_item in filtered if log_item.get("level") == level.upper()]
         if module:
-            filtered = [l for l in filtered if l.get("module") == module]
+            filtered = [log_item for log_item in filtered if log_item.get("module") == module]
         if trace_id:
-            filtered = [l for l in filtered if l.get("trace_id") == trace_id]
+            filtered = [log_item for log_item in filtered if log_item.get("trace_id") == trace_id]
         if search:
             search_lower = search.lower()
             filtered = [
-                l for l in filtered
-                if search_lower in l.get("message", "").lower()
-                or search_lower in str(l.get("details", "")).lower()
+                log_item
+                for log_item in filtered
+                if search_lower in log_item.get("message", "").lower()
+                or search_lower in str(log_item.get("details", "")).lower()
             ]
 
         # Reverse chronological ordering (newest first)

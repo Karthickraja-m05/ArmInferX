@@ -7,14 +7,14 @@ atomic recovery/restore procedures, and recovery testing tools.
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import time
 import zipfile
+from pathlib import Path
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.app.core.config import settings
 
@@ -74,7 +74,14 @@ class BackupService:
             # 3. Storage Directories (Experiments, Benchmarks, Deployments, Performix)
             storage_dir = Path("storage")
             if storage_dir.exists():
-                for subfolder in ["experiments", "benchmarks", "deployments", "performix", "models", "workflows"]:
+                for subfolder in [
+                    "experiments",
+                    "benchmarks",
+                    "deployments",
+                    "performix",
+                    "models",
+                    "workflows",
+                ]:
                     sub_path = storage_dir / subfolder
                     if sub_path.exists():
                         for root, _, files in os.walk(sub_path):
@@ -94,7 +101,7 @@ class BackupService:
             backup_file=str(archive_path.name),
             file_size_bytes=file_size,
             sha256_checksum=checksum,
-            included_components=sorted(list(set(included))),
+            included_components=sorted(set(included)),
             verification_status="VERIFIED",
         )
 
@@ -120,7 +127,7 @@ class BackupService:
             return False
 
         try:
-            with open(manifest_path, "r", encoding="utf-8") as f:
+            with open(manifest_path, encoding="utf-8") as f:
                 manifest_data = json.load(f)
 
             computed_checksum = self._compute_sha256(archive_path)
@@ -135,8 +142,12 @@ class BackupService:
 
             is_valid = computed_checksum == expected_checksum
             if not is_valid:
-                logger.error("Backup checksum mismatch", computed=computed_checksum, expected=expected_checksum)
-            return is_valid
+                logger.error(
+                    "Backup checksum mismatch",
+                    computed=computed_checksum,
+                    expected=expected_checksum,
+                )
+            return bool(is_valid)
         except Exception as err:
             logger.error("Failed to verify backup integrity", error=str(err))
             return False
@@ -146,7 +157,7 @@ class BackupService:
         manifests: list[BackupManifest] = []
         for manifest_file in self.backup_dir.glob("*.json"):
             try:
-                with open(manifest_file, "r", encoding="utf-8") as f:
+                with open(manifest_file, encoding="utf-8") as f:
                     data = json.load(f)
                     manifests.append(BackupManifest(**data))
             except Exception:
@@ -166,7 +177,7 @@ class BackupService:
         with zipfile.ZipFile(archive_path, "r") as zipf:
             for member in zipf.infolist():
                 # Extract safely protecting against zip-slip vulnerability
-                extracted_path = zipf.extract(member, path=restore_base)
+                zipf.extract(member, path=restore_base)
                 restored_files_count += 1
 
         logger.info(
@@ -185,7 +196,7 @@ class BackupService:
     def run_recovery_test(self) -> dict[str, Any]:
         """Execute automated end-to-end disaster recovery simulation test."""
         test_id = f"recovery-test-{int(time.time())}"
-        manifest = self.create_backup(backup_id=test_id)
+        self.create_backup(backup_id=test_id)
         verified = self.verify_backup(test_id)
 
         # Temporary restore test

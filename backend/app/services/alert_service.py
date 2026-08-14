@@ -5,10 +5,9 @@ generates structured alerts (CRITICAL, HIGH, MEDIUM, INFO), and maintains active
 """
 
 import json
-from pathlib import Path
 import time
 import uuid
-from typing import Any
+from pathlib import Path
 
 import psutil
 import structlog
@@ -46,7 +45,7 @@ class AlertService:
     def _load_alerts(self) -> dict[str, Alert]:
         if self.alerts_file.exists():
             try:
-                with open(self.alerts_file, "r", encoding="utf-8") as f:
+                with open(self.alerts_file, encoding="utf-8") as f:
                     data = json.load(f)
                     return {aid: Alert(**item) for aid, item in data.items()}
             except Exception:
@@ -73,7 +72,11 @@ class AlertService:
         """Trigger or update an active alert."""
         # Check if an active alert already exists for this rule and component
         for alert in self._alerts.values():
-            if alert.rule_name == rule_name and alert.component == component and alert.status == "ACTIVE":
+            if (
+                alert.rule_name == rule_name
+                and alert.component == component
+                and alert.status == "ACTIVE"
+            ):
                 alert.metric_value = metric_value
                 alert.message = message
                 self._save_alerts()

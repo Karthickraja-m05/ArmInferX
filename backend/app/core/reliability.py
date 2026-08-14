@@ -5,7 +5,6 @@ timeout handling, workflow state persistence & resumption, and idempotent operat
 """
 
 import asyncio
-import functools
 import json
 import random
 import time
@@ -93,7 +92,10 @@ class CircuitBreaker:
         self._failure_count += 1
         self._last_failure_time = time.time()
         if self._state in (CircuitState.CLOSED, CircuitState.HALF_OPEN):
-            if self._failure_count >= self.failure_threshold or self._state == CircuitState.HALF_OPEN:
+            if (
+                self._failure_count >= self.failure_threshold
+                or self._state == CircuitState.HALF_OPEN
+            ):
                 self._state = CircuitState.OPEN
                 self._last_state_change = time.time()
                 metrics_collector.record_error(
@@ -113,7 +115,9 @@ class CircuitBreaker:
         async with self._lock:
             current_state = self.state
             if current_state == CircuitState.OPEN:
-                remaining = max(0.0, self.recovery_timeout - (time.time() - self._last_failure_time))
+                remaining = max(
+                    0.0, self.recovery_timeout - (time.time() - self._last_failure_time)
+                )
                 raise CircuitBreakerOpenException(self.name, remaining)
 
         try:
@@ -145,9 +149,15 @@ class CircuitBreaker:
 # Global registry of circuit breakers for agent, deployment, optimization APIs
 circuit_breakers: dict[str, CircuitBreaker] = {
     "agent_engine": CircuitBreaker(name="agent_engine", failure_threshold=3, recovery_timeout=15.0),
-    "deployment_api": CircuitBreaker(name="deployment_api", failure_threshold=4, recovery_timeout=20.0),
-    "optimization_engine": CircuitBreaker(name="optimization_engine", failure_threshold=3, recovery_timeout=15.0),
-    "external_storage": CircuitBreaker(name="external_storage", failure_threshold=5, recovery_timeout=30.0),
+    "deployment_api": CircuitBreaker(
+        name="deployment_api", failure_threshold=4, recovery_timeout=20.0
+    ),
+    "optimization_engine": CircuitBreaker(
+        name="optimization_engine", failure_threshold=3, recovery_timeout=15.0
+    ),
+    "external_storage": CircuitBreaker(
+        name="external_storage", failure_threshold=5, recovery_timeout=30.0
+    ),
 }
 
 
@@ -216,13 +226,17 @@ async def with_timeout(
     """Execute asynchronous task with strict timeout threshold."""
     try:
         if callable(coro_or_func):
-            coro = coro_or_func(*args, **kwargs) if asyncio.iscoroutinefunction(coro_or_func) else coro_or_func(*args, **kwargs)
+            coro = (
+                coro_or_func(*args, **kwargs)
+                if asyncio.iscoroutinefunction(coro_or_func)
+                else coro_or_func(*args, **kwargs)
+            )
         else:
             coro = coro_or_func
         return await asyncio.wait_for(coro, timeout=timeout_seconds)
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as err:
         logger.error("Operation timed out", timeout_seconds=timeout_seconds)
-        raise TimeoutError(f"Operation timed out after {timeout_seconds} seconds")
+        raise TimeoutError(f"Operation timed out after {timeout_seconds} seconds") from err
 
 
 class IdempotentOperationManager:
@@ -236,8 +250,9 @@ class IdempotentOperationManager:
     def _load_cache(self) -> dict[str, dict[str, Any]]:
         if self.cache_file.exists():
             try:
-                with open(self.cache_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                with open(self.cache_file, encoding="utf-8") as f:
+                    cache_data: dict[str, dict[str, Any]] = json.load(f)
+                    return cache_data
             except Exception:
                 return {}
         return {}
@@ -274,8 +289,9 @@ class WorkflowRecoveryManager:
     def _load_states(self) -> dict[str, dict[str, Any]]:
         if self.state_file.exists():
             try:
-                with open(self.state_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                with open(self.state_file, encoding="utf-8") as f:
+                    state_data: dict[str, dict[str, Any]] = json.load(f)
+                    return state_data
             except Exception:
                 return {}
         return {}
@@ -314,10 +330,7 @@ class WorkflowRecoveryManager:
 
     def get_pending_workflows(self) -> list[dict[str, Any]]:
         """Retrieve all workflows that were in RUNNING or PENDING state before service restart."""
-        return [
-            wf for wf in self._workflows.values()
-            if wf.get("status") in ("PENDING", "RUNNING")
-        ]
+        return [wf for wf in self._workflows.values() if wf.get("status") in ("PENDING", "RUNNING")]
 
     def recover_and_resume_workflows(self) -> int:
         """Scan state manifest and reset interrupted RUNNING workflows to PENDING for recovery."""
@@ -329,7 +342,9 @@ class WorkflowRecoveryManager:
             count += 1
         if count > 0:
             self._save_states()
-            logger.info("Recovered interrupted background workflows on service restart", count=count)
+            logger.info(
+                "Recovered interrupted background workflows on service restart", count=count
+            )
         return count
 
 

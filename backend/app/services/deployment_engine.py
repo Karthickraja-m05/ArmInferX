@@ -10,7 +10,6 @@ Orchestrates full production deployment workflows:
 7. Active Promotion & Audit Event Logging
 """
 
-import logging
 import time
 from typing import Any
 from uuid import uuid4
@@ -24,7 +23,6 @@ from backend.app.services.production_config_manager import production_config_man
 from backend.app.services.runtime_manager import runtime_manager
 
 logger = structlog.get_logger(__name__)
-
 
 
 class DeploymentEngine:
@@ -122,7 +120,7 @@ class DeploymentEngine:
                 event_type="ERROR",
                 message=f"Model load failed: {str(err)}",
             )
-            raise RuntimeError(f"Deployment failed during model load: {str(err)}")
+            raise RuntimeError(f"Deployment failed during model load: {str(err)}") from err
 
         # ------------------------------------------------------------------
         # Step 5 & 6: Multi-Stage Health Verification
@@ -147,7 +145,9 @@ class DeploymentEngine:
                 message=f"Deployment health verification failed. Overall status: {health_report.overall_status}",
                 details=health_report.model_dump(),
             )
-            raise RuntimeError(f"Deployment health verification failed: {health_report.overall_status}")
+            raise RuntimeError(
+                f"Deployment health verification failed: {health_report.overall_status}"
+            )
 
         # ------------------------------------------------------------------
         # Step 7: Promote to ACTIVE Production Deployment

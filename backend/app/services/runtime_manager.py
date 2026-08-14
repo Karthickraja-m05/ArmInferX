@@ -3,15 +3,15 @@
 Manages model loading, unloading, reloading, state transitions, runtime health, and metadata persistence.
 """
 
-from enum import Enum
 import json
-from pathlib import Path
 import time
+from enum import Enum
+from pathlib import Path
 from typing import Any
 
 import structlog
 
-from backend.app.services.inference_engine import engine, MODEL_PATH
+from backend.app.services.inference_engine import engine
 from backend.app.services.model_downloader import ensure_model_available
 
 logger = structlog.get_logger("backend.app.services.runtime_manager")
@@ -29,9 +29,11 @@ class ModelLifecycleState(str, Enum):
 class RuntimeManager:
     """Manages active inference model lifecycle and runtime health."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.active_model_id: str | None = "qwen2.5-0.5b-instruct"
-        self.state: ModelLifecycleState = ModelLifecycleState.LOADED if engine.loaded else ModelLifecycleState.UNLOADED
+        self.state: ModelLifecycleState = (
+            ModelLifecycleState.LOADED if engine.loaded else ModelLifecycleState.UNLOADED
+        )
         self.last_state_change: str = time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def get_runtime_status(self) -> dict[str, Any]:
@@ -58,20 +60,24 @@ class RuntimeManager:
                 with open(meta_file, encoding="utf-8") as f:
                     meta = json.load(f)
                     m_id = meta.get("id", meta_file.stem)
-                    meta["is_active"] = (m_id == self.active_model_id and self.state == ModelLifecycleState.LOADED)
+                    meta["is_active"] = (
+                        m_id == self.active_model_id and self.state == ModelLifecycleState.LOADED
+                    )
                     models.append(meta)
             except Exception as err:
                 logger.error("Failed to read model metadata", file=str(meta_file), error=str(err))
 
         if not models:
-            models.append({
-                "id": "qwen2.5-0.5b-instruct",
-                "name": "Qwen2.5-0.5B-Instruct GGUF",
-                "version": "2.5-0.5b",
-                "quantization": "Q4_K_M",
-                "format": "gguf",
-                "is_active": self.state == ModelLifecycleState.LOADED,
-            })
+            models.append(
+                {
+                    "id": "qwen2.5-0.5b-instruct",
+                    "name": "Qwen2.5-0.5B-Instruct GGUF",
+                    "version": "2.5-0.5b",
+                    "quantization": "Q4_K_M",
+                    "format": "gguf",
+                    "is_active": self.state == ModelLifecycleState.LOADED,
+                }
+            )
 
         return models
 
@@ -119,7 +125,7 @@ class RuntimeManager:
 
     def get_model_status(self, model_id: str) -> dict[str, Any]:
         """Query model lifecycle status and metadata."""
-        is_active = (self.active_model_id == model_id)
+        is_active = self.active_model_id == model_id
         return {
             "model_id": model_id,
             "status": self.state.value if is_active else ModelLifecycleState.UNLOADED.value,

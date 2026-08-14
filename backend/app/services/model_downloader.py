@@ -2,8 +2,8 @@
 
 import hashlib
 import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -37,21 +37,27 @@ def compute_sha256(file_path: Path) -> str:
 def ensure_model_available() -> dict[str, Any]:
     """Download pinned GGUF model artifact if not present, verify file, and save metadata."""
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    model_path = MODELS_DIR / DEFAULT_MODEL["filename"]
+    filename_str = str(DEFAULT_MODEL["filename"])
+    url_str = str(DEFAULT_MODEL["source_url"])
+    model_path = MODELS_DIR / filename_str
     meta_path = MODELS_DIR / "qwen2.5-0.5b-instruct-q4_k_m.json"
 
     if not model_path.exists() or model_path.stat().st_size == 0:
-        logger.info("Downloading pinned open-weight model artifact", url=DEFAULT_MODEL["source_url"])
+        logger.info("Downloading pinned open-weight model artifact", url=url_str)
         start_time = time.time()
 
-        with httpx.stream("GET", DEFAULT_MODEL["source_url"], follow_redirects=True, timeout=120.0) as response:
+        with httpx.stream("GET", url_str, follow_redirects=True, timeout=120.0) as response:
             response.raise_for_status()
             with open(model_path, "wb") as f:
                 for chunk in response.iter_bytes(chunk_size=1048576):
                     f.write(chunk)
 
         download_duration = round(time.time() - start_time, 2)
-        logger.info("Model download complete", duration_seconds=download_duration, size_mb=round(model_path.stat().st_size / 1048576, 2))
+        logger.info(
+            "Model download complete",
+            duration_seconds=download_duration,
+            size_mb=round(model_path.stat().st_size / 1048576, 2),
+        )
 
     # Compute checksum
     checksum = compute_sha256(model_path)
@@ -68,5 +74,9 @@ def ensure_model_available() -> dict[str, Any]:
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
 
-    logger.info("Model verified and ready", filename=DEFAULT_MODEL["filename"], checksum=checksum[:16] + "...")
+    logger.info(
+        "Model verified and ready",
+        filename=DEFAULT_MODEL["filename"],
+        checksum=checksum[:16] + "...",
+    )
     return metadata

@@ -4,16 +4,17 @@ Executes evaluation dataset prompts against live inference runtime, captures rea
 measures latency, and associates response records with target configuration IDs.
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import structlog
 from pydantic import BaseModel, Field
 
 from backend.app.services.inference_engine import CompletionRequest, InferenceEngine
-from backend.app.services.quality_dataset_manager import DatasetManifest, PromptItem, QualityDatasetManager
+from backend.app.services.quality_dataset_manager import (
+    QualityDatasetManager,
+)
 
 logger = structlog.get_logger("backend.app.services.quality_response_collector")
 
@@ -66,7 +67,12 @@ class QualityResponseCollector:
         coll_id = f"coll-{int(time.time())}"
         response_items: list[ResponseItem] = []
 
-        logger.info("Starting dataset response collection", config_id=config_id, dataset_id=dataset_id, count=len(dataset.prompts))
+        logger.info(
+            "Starting dataset response collection",
+            config_id=config_id,
+            dataset_id=dataset_id,
+            count=len(dataset.prompts),
+        )
 
         for item in dataset.prompts:
             t0 = time.time()
@@ -98,7 +104,9 @@ class QualityResponseCollector:
                 )
             except Exception as err:
                 elapsed_ms = round((time.time() - t0) * 1000.0, 2)
-                logger.error("Response collection prompt failure", prompt_id=item.prompt_id, error=str(err))
+                logger.error(
+                    "Response collection prompt failure", prompt_id=item.prompt_id, error=str(err)
+                )
                 response_items.append(
                     ResponseItem(
                         prompt_id=item.prompt_id,

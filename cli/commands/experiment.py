@@ -1,9 +1,10 @@
 """ArmServe CLI experiment command group."""
 
-import json
+from typing import Any
+
 import httpx
-from rich.table import Table
 import typer
+from rich.table import Table
 
 from cli.formatting import get_console, print_error, print_json_output
 
@@ -13,11 +14,17 @@ experiment_app = typer.Typer(
 )
 
 
-@experiment_app.command(name="generate", help="Generate experiment configurations from parameter spec.")
+@experiment_app.command(
+    name="generate", help="Generate experiment configurations from parameter spec."
+)
 def experiment_generate(
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     threads: str = typer.Option("1,2,4", "--threads", "-t", help="Comma-separated thread counts."),
-    batch_sizes: str = typer.Option("64,128", "--batch-sizes", "-b", help="Comma-separated batch sizes."),
+    batch_sizes: str = typer.Option(
+        "64,128", "--batch-sizes", "-b", help="Comma-separated batch sizes."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """Generate experiment configurations from parameter spec."""
@@ -49,7 +56,9 @@ def experiment_generate(
             return
 
         console = get_console()
-        table = Table(title="Generated Experiment Configurations", title_style="bold green", show_header=True)
+        table = Table(
+            title="Generated Experiment Configurations", title_style="bold green", show_header=True
+        )
         table.add_column("Config ID", style="bold yellow")
         table.add_column("Threads", style="cyan")
         table.add_column("Batch Size", style="magenta")
@@ -68,17 +77,23 @@ def experiment_generate(
             )
 
         console.print(table)
-        console.print(f"\nGenerated [bold green]{len(data)}[/bold green] valid experiment configuration(s).")
+        console.print(
+            f"\nGenerated [bold green]{len(data)}[/bold green] valid experiment configuration(s)."
+        )
 
     except Exception as err:
         print_error(f"Failed to generate experiment configurations: {err}")
         raise typer.Exit(code=1) from err
 
 
-@experiment_app.command(name="schedule", help="Enqueue experiment configurations into execution queue.")
+@experiment_app.command(
+    name="schedule", help="Enqueue experiment configurations into execution queue."
+)
 def experiment_schedule(
     configs: list[str] = typer.Argument(..., help="Config IDs to schedule."),
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """Enqueue experiment configurations into execution queue."""
@@ -95,7 +110,9 @@ def experiment_schedule(
             return
 
         console = get_console()
-        console.print(f"[bold green]Successfully enqueued {data.get('enqueued_count')} configuration(s).[/bold green]")
+        console.print(
+            f"[bold green]Successfully enqueued {data.get('enqueued_count')} configuration(s).[/bold green]"
+        )
         for cid in data.get("enqueued_configs", []):
             console.print(f"  • {cid}", style="yellow")
 
@@ -104,9 +121,13 @@ def experiment_schedule(
         raise typer.Exit(code=1) from err
 
 
-@experiment_app.command(name="rank", help="Evaluate SLA constraints, score, and rank top configurations.")
+@experiment_app.command(
+    name="rank", help="Evaluate SLA constraints, score, and rank top configurations."
+)
 def experiment_rank(
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     max_latency: float = typer.Option(None, "--max-latency", help="Max allowed P50 latency (ms)."),
     min_rps: float = typer.Option(None, "--min-rps", help="Min required RPS throughput."),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
@@ -114,7 +135,7 @@ def experiment_rank(
     """Evaluate SLA constraints, score, and rank top configurations."""
     target_url = f"{url.rstrip('/')}/experiments/evaluate"
 
-    payload = {}
+    payload: dict[str, Any] = {}
     if max_latency or min_rps:
         payload["constraints"] = {}
         if max_latency:
@@ -133,7 +154,11 @@ def experiment_rank(
             return
 
         console = get_console()
-        table = Table(title=f"ArmServe Top Ranked Configurations ({data.get('ranking_id')})", title_style="bold gold1", show_header=True)
+        table = Table(
+            title=f"ArmServe Top Ranked Configurations ({data.get('ranking_id')})",
+            title_style="bold gold1",
+            show_header=True,
+        )
         table.add_column("Rank", style="bold cyan")
         table.add_column("Config ID", style="bold yellow")
         table.add_column("Score", style="bold green")
@@ -146,7 +171,11 @@ def experiment_rank(
         for item in data.get("top_configurations", []):
             cfg = item.get("configuration") or {}
             metrics = item.get("metrics_summary") or {}
-            comp_str = "[bold green]YES[/bold green]" if item.get("is_compliant") else "[bold red]NO[/bold red]"
+            comp_str = (
+                "[bold green]YES[/bold green]"
+                if item.get("is_compliant")
+                else "[bold red]NO[/bold red]"
+            )
             table.add_row(
                 str(item.get("rank")),
                 str(item.get("config_id")),
@@ -159,7 +188,9 @@ def experiment_rank(
             )
 
         console.print(table)
-        console.print(f"\nEvaluated [bold]{data.get('total_evaluated')}[/bold] run(s). Compliant: [bold green]{data.get('compliant_count')}[/bold green], Rejected: [bold red]{data.get('rejected_count')}[/bold red].")
+        console.print(
+            f"\nEvaluated [bold]{data.get('total_evaluated')}[/bold] run(s). Compliant: [bold green]{data.get('compliant_count')}[/bold green], Rejected: [bold red]{data.get('rejected_count')}[/bold red]."
+        )
 
     except Exception as err:
         print_error(f"Ranking failed: {err}")
@@ -168,7 +199,9 @@ def experiment_rank(
 
 @experiment_app.command(name="status", help="Get real-time experiment scheduler queue status.")
 def experiment_status(
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """Get real-time experiment scheduler queue status."""
@@ -185,7 +218,11 @@ def experiment_status(
             return
 
         console = get_console()
-        table = Table(title="ArmServe Experiment Scheduler Queue Status", title_style="bold blue", show_header=True)
+        table = Table(
+            title="ArmServe Experiment Scheduler Queue Status",
+            title_style="bold blue",
+            show_header=True,
+        )
         table.add_column("Property", style="cyan")
         table.add_column("Value", style="bold white")
 
@@ -210,7 +247,9 @@ def experiment_status(
 @experiment_app.command(name="run", help="Execute an optimization experiment configuration.")
 def experiment_run(
     config_id: str = typer.Argument(..., help="Target Configuration ID (e.g. cfg-a1b2c3d4)."),
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """Execute an optimization experiment configuration."""
@@ -230,7 +269,11 @@ def experiment_run(
         status_str = data.get("status", "UNKNOWN")
         status_color = "bold green" if status_str == "COMPLETED" else "bold red"
 
-        table = Table(title=f"ArmServe Experiment Run Summary — {data.get('experiment_id')}", title_style="bold blue", show_header=True)
+        table = Table(
+            title=f"ArmServe Experiment Run Summary — {data.get('experiment_id')}",
+            title_style="bold blue",
+            show_header=True,
+        )
         table.add_column("Property", style="cyan")
         table.add_column("Value", style="bold white")
 
@@ -257,8 +300,12 @@ def experiment_run(
 
 @experiment_app.command(name="list", help="List historical experiment run manifests.")
 def experiment_list(
-    url: str = typer.Option("http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."),
-    status_filter: str = typer.Option(None, "--status", "-s", help="Filter by status (COMPLETED, FAILED)."),
+    url: str = typer.Option(
+        "http://127.0.0.1:8000/api/v1", "--url", "-u", help="ArmServe API base URL."
+    ),
+    status_filter: str = typer.Option(
+        None, "--status", "-s", help="Filter by status (COMPLETED, FAILED)."
+    ),
     json_output: bool = typer.Option(False, "--json", help="Output raw JSON response."),
 ) -> None:
     """List historical experiment run manifests."""
@@ -277,7 +324,9 @@ def experiment_list(
             return
 
         console = get_console()
-        table = Table(title="ArmServe Experiment Execution History", title_style="bold cyan", show_header=True)
+        table = Table(
+            title="ArmServe Experiment Execution History", title_style="bold cyan", show_header=True
+        )
         table.add_column("Experiment ID", style="bold yellow")
         table.add_column("Config ID", style="dim")
         table.add_column("Status", style="bold")

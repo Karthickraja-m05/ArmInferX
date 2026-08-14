@@ -99,6 +99,10 @@ exclude = [
     "dist",
 ]
 
+[[tool.mypy.overrides]]
+module = ["tests.*", "backend.tests.*"]
+disallow_untyped_defs = false
+
 
 # --- Pytest Configuration ---
 [tool.pytest.ini_options]

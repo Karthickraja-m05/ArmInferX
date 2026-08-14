@@ -5,8 +5,8 @@ requests, tokens, concurrency) associated with specific benchmark runs and confi
 """
 
 import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import structlog
@@ -85,7 +85,12 @@ class CostResourceCollector:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(measurement.model_dump_json(indent=2))
 
-        logger.info("Recorded resource usage measurement", m_id=m_id, benchmark_id=benchmark_id, config_id=config_id)
+        logger.info(
+            "Recorded resource usage measurement",
+            m_id=m_id,
+            benchmark_id=benchmark_id,
+            config_id=config_id,
+        )
         return measurement
 
     def get_measurement(self, measurement_id: str) -> ResourceUsageMeasurement | None:

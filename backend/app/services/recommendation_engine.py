@@ -4,17 +4,16 @@ Analyzes ranked experiment results, selects the optimal configuration satisfying
 computes empirical delta improvements against baseline, and generates evidence-based explanations.
 """
 
-import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from backend.app.services.configuration_ranker import ConfigurationRanker, RankedConfigurationItem, RankingReport
-from backend.app.services.constraint_engine import ConstraintSpec
-from backend.app.services.scoring_engine import ObjectiveWeights
+from backend.app.services.configuration_ranker import (
+    RankingReport,
+)
 
 logger = structlog.get_logger("backend.app.services.recommendation_engine")
 
@@ -103,7 +102,11 @@ class RecommendationEngine:
 
         # Quantitative Deltas against Baseline (if baseline provided)
         if isinstance(baseline_run, dict):
-            b_metrics = baseline_run.get("metrics_summary") if isinstance(baseline_run.get("metrics_summary"), dict) else baseline_run
+            b_metrics = (
+                baseline_run.get("metrics_summary")
+                if isinstance(baseline_run.get("metrics_summary"), dict)
+                else baseline_run
+            )
             if not isinstance(b_metrics, dict):
                 b_metrics = {}
 
@@ -150,12 +153,18 @@ class RecommendationEngine:
         batch = int(cfg.get("batch_size", 1))
 
         if threads > 4:
-            trade_offs.append(f"Higher CPU Allocation: Uses {threads} threads, increasing vCPU core utilization.")
+            trade_offs.append(
+                f"Higher CPU Allocation: Uses {threads} threads, increasing vCPU core utilization."
+            )
         if batch > 64:
-            trade_offs.append(f"Larger Batch Size ({batch}): Increases throughput but slightly elevates TTFT under queue pressure.")
+            trade_offs.append(
+                f"Larger Batch Size ({batch}): Increases throughput but slightly elevates TTFT under queue pressure."
+            )
 
         if not trade_offs:
-            trade_offs.append("Balanced Resource Allocation: Maintains optimal thread count and memory efficiency.")
+            trade_offs.append(
+                "Balanced Resource Allocation: Maintains optimal thread count and memory efficiency."
+            )
 
         # 4. Rejected Alternatives
         rejected: list[AlternativeSummary] = []
@@ -197,5 +206,7 @@ class RecommendationEngine:
         with open(out_file, "w", encoding="utf-8") as f:
             f.write(rec.model_dump_json(indent=2))
 
-        logger.info("Generated optimization recommendation", rec_id=rec_id, config_id=best_item.config_id)
+        logger.info(
+            "Generated optimization recommendation", rec_id=rec_id, config_id=best_item.config_id
+        )
         return rec
