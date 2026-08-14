@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { calculateCost, CostCalculationResponse } from '../services/api';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
@@ -16,7 +16,7 @@ export const CostPage: React.FC = () => {
   const [monthlyQueries, setMonthlyQueries] = useState<number>(10000000);
 
 
-  const loadCostData = async () => {
+  const loadCostData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -36,11 +36,11 @@ export const CostPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [instanceType, hourlyRate, throughputTPS, monthlyQueries]);
 
   useEffect(() => {
     loadCostData();
-  }, []);
+  }, [loadCostData]);
 
   if (loading) return <LoadingState message="Calculating AWS Graviton Cost Savings..." />;
   if (error) return <ErrorState title="Cost Calculator Error" message={error} onRetry={loadCostData} />;

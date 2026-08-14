@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   fetchPerformixResults,
   fetchPerformixComparison,
@@ -30,7 +30,7 @@ export const PerformixPage: React.FC = () => {
   const [activeReportFormat, setActiveReportFormat] = useState<'markdown' | 'json' | 'csv'>('markdown');
   const [reportContent, setReportContent] = useState<string>('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -51,7 +51,7 @@ export const PerformixPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeReportFormat]);
 
   const handleRunPerformix = async () => {
     setRunning(true);
@@ -91,7 +91,7 @@ export const PerformixPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   if (loading) return <LoadingState message="Connecting to Arm Performix Official Benchmark Suite..." />;
   if (error) return <ErrorState title="Performix Engine Error" message={error} onRetry={loadData} />;
