@@ -21,7 +21,7 @@ resource "aws_cloudwatch_log_group" "graviton_worker" {
   tags = merge(
     var.tags,
     {
-      Name        = "/armserve/${var.environment}/graviton"
+      Name         = "/armserve/${var.environment}/graviton"
       Architecture = "ARM64"
       Environment  = var.environment
       ManagedBy    = "Terraform"

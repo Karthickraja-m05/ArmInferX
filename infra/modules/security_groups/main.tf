@@ -89,7 +89,7 @@ resource "aws_security_group" "graviton_compute" {
   tags = merge(
     var.tags,
     {
-      Name        = "${var.project_name}-${var.environment}-graviton-compute-sg"
+      Name         = "${var.project_name}-${var.environment}-graviton-compute-sg"
       Architecture = "ARM64"
       Environment  = var.environment
       ManagedBy    = "Terraform"

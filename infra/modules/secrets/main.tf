@@ -7,8 +7,8 @@ resource "random_password" "db_password" {
 
 # Random Secure Secret Key for JWT Authentication
 resource "random_password" "auth_secret_key" {
-  length           = 64
-  special          = false
+  length  = 64
+  special = false
 }
 
 # AWS Secrets Manager Entry for Database Credentials

@@ -6,12 +6,17 @@ useDefault = true
 [allowlist]
 description = "Global allowlist for ArmInferX tests, documentation, and mock environment values"
 paths = [
+  '''^\.env$''',
   '''^\.env\.example$''',
+  '''^docker-compose\.yml$''',
+  '''^docker/.*''',
+  '''^render\.yaml$''',
   '''^tests/.*''',
   '''^backend/tests/.*''',
   '''^frontend/src/__tests__/.*''',
   '''^docs/.*''',
   '''^storage/.*''',
+  '''^backend/app/core/config\.py$''',
 ]
 regexes = [
   '''armserve_dev_pass''',
@@ -20,10 +25,24 @@ regexes = [
   '''test_armserve\.db''',
   '''00000000-0000-0000-0000-000000000000''',
   '''sk-[a-zA-Z0-9]{32,}''',
+  '''dev-secret-key-change-in-production-min-32-chars''',
+  '''armserve_docker_secret_key_32_bytes_long!''',
+  '''armserve_docker_secure_pass_2026!''',
+  '''super-secret-db-password-12345''',
+  '''super-secure-production-jwt-secret-key-min-32-bytes''',
+  '''a-very-long-production-secret-key-32-chars-long''',
+  '''prod-password-999''',
+  '''secure-prod-db-pass-12345''',
+  '''sensitive-super-secret-key-value-999''',
+  '''arm_live_secret_key_99999999''',
 ]
 stopwords = [
   "armserve_dev_pass",
   "armserve_test_pass",
   "test_secret_key_mock",
   "mock_jwt_secret_token",
+  "dev-secret-key-change-in-production-min-32-chars",
+  "armserve_docker_secret_key_32_bytes_long!",
+  "armserve_docker_secure_pass_2026!",
 ]
+

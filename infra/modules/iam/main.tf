@@ -19,7 +19,7 @@ resource "aws_iam_role" "graviton_node_role" {
   tags = merge(
     var.tags,
     {
-      Name        = "${var.project_name}-${var.environment}-graviton-node-role"
+      Name         = "${var.project_name}-${var.environment}-graviton-node-role"
       Architecture = "ARM64"
       Environment  = var.environment
       ManagedBy    = "Terraform"

@@ -60,6 +60,9 @@ jobs:
   backend-unit-tests:
     name: "Backend / Unit Tests"
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: "."
+      APP_ENV: "test"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -70,11 +73,15 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Run unit tests
-        run: pytest backend/tests/unit -ra -q --tb=short
+        run: python -m pytest backend/tests/unit -ra -q --tb=short
 
   backend-integration-tests:
     name: "Backend / Integration Tests"
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: "."
+      DATABASE_URL: "sqlite+aiosqlite:///test_armserve.db"
+      APP_ENV: "test"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -85,10 +92,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Run integration tests
-        env:
-          DATABASE_URL: "sqlite+aiosqlite:///test_armserve.db"
-          APP_ENV: "test"
-        run: pytest backend/tests/integration -ra -q --tb=short
+        run: python -m pytest backend/tests/integration -ra -q --tb=short
 
   # ─── Frontend Checks ────────────────────────────────────────────────
   frontend-lint:
@@ -189,7 +193,7 @@ jobs:
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/
       - name: Run gitleaks
-        run: gitleaks detect --source . --verbose --no-git
+        run: gitleaks detect --source . --config .gitleaks.toml --verbose --no-git
 
   dependency-audit:
     name: "Security / Dependency Audit"
