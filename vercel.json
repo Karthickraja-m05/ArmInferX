@@ -3,8 +3,29 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://armserve.onrender.com/api/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://armserve.onrender.com/health"
+    },
+    {
+      "source": "/ready",
+      "destination": "https://armserve.onrender.com/ready"
+    },
+    {
+      "source": "/deployments/:path*",
+      "destination": "https://armserve.onrender.com/deployments/:path*"
+    },
+    {
+      "source": "/performix/:path*",
+      "destination": "https://armserve.onrender.com/performix/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
 }
+
