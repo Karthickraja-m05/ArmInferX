@@ -62,7 +62,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: "."
-      APP_ENV: "test"
+      ARMSERVE_APP__ENV: "test"
+      ARMSERVE_APP__DEBUG: "true"
+      DATABASE_URL: "sqlite+aiosqlite:///test_armserve.db"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -80,8 +82,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: "."
+      ARMSERVE_APP__ENV: "test"
+      ARMSERVE_APP__DEBUG: "true"
       DATABASE_URL: "sqlite+aiosqlite:///test_armserve.db"
-      APP_ENV: "test"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -193,7 +196,7 @@ jobs:
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/
       - name: Run gitleaks
-        run: gitleaks detect -c .gitleaks.toml --source . --verbose --no-git
+        run: gitleaks detect -c .gitleaks.toml --source . --verbose --no-git --redact
 
   dependency-audit:
     name: "Security / Dependency Audit"

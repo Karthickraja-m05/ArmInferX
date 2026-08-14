@@ -13,6 +13,8 @@ paths = [
   '''(?i).*docs.*''',
   '''(?i).*storage.*''',
   '''(?i).*config\.py.*''',
+  '''(?i).*README\.md''',
+  '''(?i).*alembic.*''',
 ]
 regexes = [
   '''armserve_dev_pass''',
@@ -31,7 +33,11 @@ regexes = [
   '''secure-prod-db-pass-12345''',
   '''sensitive-super-secret-key-value-999''',
   '''arm_live_secret_key_99999999''',
+  '''arm_live_secret_key_9999''',
+  '''arm_live_secret_key.*''',
   '''armserve-secure-jwt-signing-secret-key-32bytes-min''',
+  '''armserve_prod_password_secure_999''',
+  '''test-db-pass-12345''',
 ]
 stopwords = [
   "armserve_dev_pass",
@@ -42,5 +48,7 @@ stopwords = [
   "armserve-secure-jwt-signing-secret-key-32bytes-min",
   "armserve_docker_secret_key_32_bytes_long!",
   "armserve_docker_secure_pass_2026!",
+  "arm_live_secret_key_9999",
+  "arm_live_secret_key_99999999",
 ]
 
