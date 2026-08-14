@@ -22,8 +22,10 @@ export const DeploymentsPage: React.FC = () => {
   const [rollingBack, setRollingBack] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [depsData, activeData, healthData] = await Promise.all([
@@ -50,7 +52,9 @@ export const DeploymentsPage: React.FC = () => {
         setError('Failed to fetch deployment monitoring data.');
       }
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   };
 
@@ -60,7 +64,7 @@ export const DeploymentsPage: React.FC = () => {
     try {
       const res = await rollbackDeployment(depId, 'Operator triggered dashboard rollback');
       alert(`Rollback complete: ${res.message}`);
-      await loadData();
+      await loadData(false);
     } catch (err: unknown) {
       if (err instanceof Error) alert(`Rollback failed: ${err.message}`);
     } finally {
@@ -69,13 +73,13 @@ export const DeploymentsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 5000);
+    loadData(true);
+    const interval = setInterval(() => loadData(false), 5000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) return <LoadingState message="Fetching Real Deployment Telemetry & 5-Stage Health Probes..." />;
-  if (error) return <ErrorState title="Deployment Engine Error" message={error} onRetry={loadData} />;
+  if (error) return <ErrorState title="Deployment Engine Error" message={error} onRetry={() => loadData(true)} />;
 
   return (
     <div className="page-content">

@@ -18,8 +18,10 @@ export const AgentPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [statusRes, decisionsRes] = await Promise.all([
@@ -35,7 +37,9 @@ export const AgentPage: React.FC = () => {
         setError('Failed to fetch agent status');
       }
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   };
 
@@ -43,7 +47,7 @@ export const AgentPage: React.FC = () => {
     setActionLoading(true);
     try {
       await startAgent('Optimize inference latency and cost on AWS Graviton3');
-      await loadData();
+      await loadData(false);
     } catch (err: unknown) {
       if (err instanceof Error) alert(`Agent error: ${err.message}`);
     } finally {
@@ -55,7 +59,7 @@ export const AgentPage: React.FC = () => {
     setActionLoading(true);
     try {
       await stopAgent();
-      await loadData();
+      await loadData(false);
     } catch (err: unknown) {
       if (err instanceof Error) alert(`Agent error: ${err.message}`);
     } finally {
@@ -64,13 +68,13 @@ export const AgentPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 3000);
+    loadData(true);
+    const interval = setInterval(() => loadData(false), 3000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) return <LoadingState message="Connecting to Autonomous Agent Orchestrator..." />;
-  if (error) return <ErrorState title="Agent Connection Error" message={error} onRetry={loadData} />;
+  if (error) return <ErrorState title="Agent Connection Error" message={error} onRetry={() => loadData(true)} />;
 
   return (
     <div className="page-content">

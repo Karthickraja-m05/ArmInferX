@@ -44,8 +44,10 @@ export const OverviewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [
@@ -87,18 +89,20 @@ export const OverviewPage: React.FC = () => {
         setError('Failed to connect to backend service.');
       }
     } finally {
-      setLoading(false);
+      if (isInitial) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 5000);
+    loadData(true);
+    const interval = setInterval(() => loadData(false), 5000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) return <LoadingState message="Connecting to ArmServe Backend Core..." />;
-  if (error) return <ErrorState title="Backend Connection Error" message={error} onRetry={loadData} />;
+  if (error) return <ErrorState title="Backend Connection Error" message={error} onRetry={() => loadData(true)} />;
 
   return (
     <div className="page-content">
