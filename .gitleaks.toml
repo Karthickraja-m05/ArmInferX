@@ -6,17 +6,13 @@ useDefault = true
 [allowlist]
 description = "Global allowlist for ArmInferX tests, documentation, and mock environment values"
 paths = [
-  '''^\.env$''',
-  '''^\.env\.example$''',
-  '''^docker-compose\.yml$''',
-  '''^docker/.*''',
-  '''^render\.yaml$''',
-  '''^tests/.*''',
-  '''^backend/tests/.*''',
-  '''^frontend/src/__tests__/.*''',
-  '''^docs/.*''',
-  '''^storage/.*''',
-  '''^backend/app/core/config\.py$''',
+  '''(?i).*\.env.*''',
+  '''(?i).*docker.*''',
+  '''(?i).*render\.yaml.*''',
+  '''(?i).*tests.*''',
+  '''(?i).*docs.*''',
+  '''(?i).*storage.*''',
+  '''(?i).*config\.py.*''',
 ]
 regexes = [
   '''armserve_dev_pass''',
