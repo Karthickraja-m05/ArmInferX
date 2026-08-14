@@ -124,7 +124,7 @@ app.include_router(performix_root_router)
 app.include_router(operational_root_router)
 
 
-@app.get("/", summary="Root Status Overview")
+@app.api_route("/", methods=["GET", "HEAD"], summary="Root Status Overview")
 async def root() -> dict[str, str]:
     return {
         "name": "ArmServe API",
