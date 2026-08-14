@@ -1,0 +1,29 @@
+# Gitleaks Configuration for ArmInferX
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for ArmInferX tests, documentation, and mock environment values"
+paths = [
+  '''^\.env\.example$''',
+  '''^tests/.*''',
+  '''^backend/tests/.*''',
+  '''^frontend/src/__tests__/.*''',
+  '''^docs/.*''',
+  '''^storage/.*''',
+]
+regexes = [
+  '''armserve_dev_pass''',
+  '''armserve_test_pass''',
+  '''armserve-terraform-state''',
+  '''test_armserve\.db''',
+  '''00000000-0000-0000-0000-000000000000''',
+  '''sk-[a-zA-Z0-9]{32,}''',
+]
+stopwords = [
+  "armserve_dev_pass",
+  "armserve_test_pass",
+  "test_secret_key_mock",
+  "mock_jwt_secret_token",
+]

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: arminferx-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.11
+      - key: ARMSERVE_APP__DEBUG
+        value: "false"
+      - key: ARMSERVE_APP__ENV
+        value: "production"
+      - key: ARMSERVE_APP__HOST
+        value: "0.0.0.0"
+      - key: ARMSERVE_APP__CORS_ORIGINS
+        value: '["*"]'
+      - key: DATABASE_URL
+        value: "sqlite+aiosqlite:///storage/armserve.db"

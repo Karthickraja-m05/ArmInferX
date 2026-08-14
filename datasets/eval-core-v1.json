@@ -1,0 +1,74 @@
+{
+  "dataset_id": "eval-core-v1",
+  "name": "ArmServe Core Benchmark Evaluation Dataset",
+  "version": "1.0.0",
+  "created_at": "2026-08-12T23:01:29Z",
+  "prompts": [
+    {
+      "prompt_id": "p-reasoning-1",
+      "prompt": "If all cats are mammals and all mammals are animals, are all cats animals?",
+      "category": "reasoning",
+      "difficulty": "easy",
+      "expected_behavior": {
+        "expected_keywords": [
+          "yes",
+          "cats are animals"
+        ],
+        "format": "text"
+      },
+      "metadata": {}
+    },
+    {
+      "prompt_id": "p-coding-1",
+      "prompt": "Write a Python function named `is_palindrome(s: str) -> bool` that checks if a string is a palindrome.",
+      "category": "coding",
+      "difficulty": "medium",
+      "expected_behavior": {
+        "expected_keywords": [
+          "def is_palindrome",
+          "return"
+        ],
+        "syntax_check": "python"
+      },
+      "metadata": {}
+    },
+    {
+      "prompt_id": "p-qa-1",
+      "prompt": "What is the capital of France?",
+      "category": "question_answering",
+      "difficulty": "easy",
+      "expected_behavior": {
+        "exact_match_contains": [
+          "Paris"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "prompt_id": "p-summary-1",
+      "prompt": "Summarize the following in one sentence: ArmServe is an autonomous AI optimization platform designed for AWS Graviton ARM64 CPU inference infrastructure.",
+      "category": "summarization",
+      "difficulty": "easy",
+      "expected_behavior": {
+        "max_sentence_count": 1,
+        "expected_keywords": [
+          "ArmServe",
+          "ARM64"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "prompt_id": "p-class-1",
+      "prompt": "Classify the sentiment of this text as POSITIVE or NEGATIVE: 'The performance tuning on Graviton servers produced incredible throughput gains.'",
+      "category": "classification",
+      "difficulty": "easy",
+      "expected_behavior": {
+        "exact_match_contains": [
+          "POSITIVE"
+        ]
+      },
+      "metadata": {}
+    }
+  ]
+}
