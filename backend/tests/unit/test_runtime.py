@@ -1,11 +1,10 @@
 """Unit tests for ArmServe Backend Runtime Integration & Model Lifecycle Manager."""
 
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
-from backend.app.services.runtime_manager import runtime_manager, ModelLifecycleState
+from backend.app.services.runtime_manager import ModelLifecycleState
 
 client = TestClient(app)
 

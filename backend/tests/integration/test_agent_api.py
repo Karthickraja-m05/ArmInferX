@@ -11,9 +11,9 @@ from backend.app.services.agent_workflow_orchestrator import WorkflowExecutionRe
 
 
 @pytest.mark.asyncio
-async def test_agent_api_endpoints(tmp_path: Path):
+async def test_agent_api_endpoints(tmp_path: Path) -> None:
     """Test full agent API lifecycle: /agent/status, /agent/start, /agent/stop, /agent/history, /agent/recommendation."""
-    transport = ASGITransport(app=app)
+    transport = ASGITransport(app=app)  # type: ignore[arg-type]
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 1. GET /agent/status
         res_status = await client.get("/agent/status")
@@ -51,7 +51,10 @@ async def test_agent_api_endpoints(tmp_path: Path):
             steps=[],
         )
 
-        with patch("backend.app.api.v1.agent.agent_orchestrator.run_autonomous_optimization_loop", AsyncMock(return_value=mock_wf)):
+        with patch(
+            "backend.app.api.v1.agent.agent_orchestrator.run_autonomous_optimization_loop",
+            AsyncMock(return_value=mock_wf),
+        ):
             res_start = await client.post(
                 "/agent/start",
                 json={

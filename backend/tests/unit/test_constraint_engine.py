@@ -1,7 +1,5 @@
 """Unit tests for Constraint Engine."""
 
-import pytest
-
 from backend.app.services.constraint_engine import ConstraintEngine, ConstraintSpec
 
 

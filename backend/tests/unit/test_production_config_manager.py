@@ -1,6 +1,5 @@
 """Unit tests for Production Configuration Manager."""
 
-import pytest
 from backend.app.services.production_config_manager import production_config_manager
 
 

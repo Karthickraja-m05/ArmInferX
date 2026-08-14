@@ -1,6 +1,5 @@
 """Unit tests for Deployment Monitoring."""
 
-import pytest
 from backend.app.services.deployment_monitor import deployment_monitor
 
 

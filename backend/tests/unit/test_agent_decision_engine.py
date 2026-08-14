@@ -1,14 +1,13 @@
 """Unit tests for Agent Decision Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.agent_decision_engine import AgentDecisionEngine
 from backend.app.services.agent_observation_engine import AgentObservationEngine
 from backend.app.services.agent_planning_engine import AgentPlanningEngine
 
 
-def test_agent_decision_engine(tmp_path: Path):
+def test_agent_decision_engine(tmp_path: Path) -> None:
     """Test action evaluation, stopping criteria (max steps, convergence), and decision persistence."""
     obs_engine = AgentObservationEngine(target_dir=tmp_path / "obs")
     snapshot = obs_engine.capture_state_snapshot()

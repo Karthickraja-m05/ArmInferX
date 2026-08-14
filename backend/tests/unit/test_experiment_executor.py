@@ -1,7 +1,7 @@
 """Unit tests for Experiment Executor and Experiments API Router."""
 
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi import status
@@ -14,14 +14,14 @@ from backend.app.services.experiment_generator import ConfigurationGenerator, Pa
 client = TestClient(app)
 
 
-def test_list_experiments_endpoint():
+def test_list_experiments_endpoint() -> None:
     """Test GET /api/v1/experiments endpoint."""
     res = client.get("/api/v1/experiments")
     assert res.status_code == status.HTTP_200_OK
     assert isinstance(res.json(), list)
 
 
-def test_generate_experiment_configs_endpoint(tmp_path: Path):
+def test_generate_experiment_configs_endpoint(tmp_path: Path) -> None:
     """Test POST /api/v1/experiments/generate endpoint with isolated test directory."""
     payload = {
         "thread_counts": [1, 2],
@@ -42,7 +42,7 @@ def test_generate_experiment_configs_endpoint(tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_experiment_executor_pipeline(tmp_path: Path):
+async def test_experiment_executor_pipeline(tmp_path: Path) -> None:
     """Test full experiment execution pipeline with isolated directory."""
     generator = ConfigurationGenerator(target_dir=tmp_path)
     spec = ParameterRangeSpec(
@@ -60,7 +60,10 @@ async def test_experiment_executor_pipeline(tmp_path: Path):
 
     # Patch load_config to return our isolated config
     with patch.object(ExperimentExecutor, "load_config", return_value=target_cfg):
-        exp_run = await executor.execute_experiment(target_cfg.config_id, warmup_iterations=1, benchmark_iterations=2)
+        exp_run = await executor.execute_experiment(
+            target_cfg.config_id, warmup_iterations=1, benchmark_iterations=2
+        )
         assert exp_run.status == "COMPLETED"
         assert exp_run.benchmark_run_id is not None
+        assert exp_run.metrics_summary is not None
         assert exp_run.metrics_summary["requests_per_second"] > 0

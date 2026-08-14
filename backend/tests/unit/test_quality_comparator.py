@@ -1,13 +1,12 @@
 """Unit tests for Quality Comparator Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.quality_comparator import QualityComparator
-from backend.app.services.quality_scoring_engine import PromptQualityScore, QualityEvaluationReport
+from backend.app.services.quality_scoring_engine import QualityEvaluationReport
 
 
-def test_quality_comparator(tmp_path: Path):
+def test_quality_comparator(tmp_path: Path) -> None:
     """Test baseline comparison, regression detection, and degradation threshold enforcement."""
     comparator = QualityComparator(target_dir=tmp_path)
 

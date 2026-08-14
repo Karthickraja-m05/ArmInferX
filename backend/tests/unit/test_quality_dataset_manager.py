@@ -1,12 +1,15 @@
 """Unit tests for Quality Dataset Manager."""
 
 from pathlib import Path
-import pytest
 
-from backend.app.services.quality_dataset_manager import DatasetManifest, PromptItem, QualityDatasetManager
+from backend.app.services.quality_dataset_manager import (
+    DatasetManifest,
+    PromptItem,
+    QualityDatasetManager,
+)
 
 
-def test_quality_dataset_manager_seeding(tmp_path: Path):
+def test_quality_dataset_manager_seeding(tmp_path: Path) -> None:
     """Test initial seeding and retrieval of quality evaluation datasets."""
     mgr = QualityDatasetManager(target_dir=tmp_path)
     datasets = mgr.list_datasets()
@@ -16,7 +19,7 @@ def test_quality_dataset_manager_seeding(tmp_path: Path):
     assert len(manifest.prompts) >= 5
 
 
-def test_save_and_get_dataset(tmp_path: Path):
+def test_save_and_get_dataset(tmp_path: Path) -> None:
     """Test persisting and retrieving custom versioned datasets."""
     mgr = QualityDatasetManager(target_dir=tmp_path)
 

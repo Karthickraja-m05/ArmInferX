@@ -1,6 +1,5 @@
 """Unit tests for Deployment Version Manager and Rollback."""
 
-import pytest
 from backend.app.services.deployment_version_manager import deployment_version_manager
 
 
@@ -33,6 +32,7 @@ def test_promotion_and_rollback():
     deployment_version_manager.promote_to_active(d1["id"])
 
     active_1 = deployment_version_manager.get_active_deployment()
+    assert active_1 is not None
     assert active_1["id"] == d1["id"]
     assert active_1["is_active"] is True
 
@@ -44,6 +44,7 @@ def test_promotion_and_rollback():
     deployment_version_manager.promote_to_active(d2["id"])
 
     active_2 = deployment_version_manager.get_active_deployment()
+    assert active_2 is not None
     assert active_2["id"] == d2["id"]
 
     # Execute Rollback

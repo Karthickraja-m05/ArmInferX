@@ -1,29 +1,35 @@
 """Unit tests for Metrics Normalization Engine."""
 
-import pytest
-
 from backend.app.services.metrics_normalizer import MetricsNormalizer
 
 
 def test_normalize_single_value_direct():
     """Test direct min-max normalization where higher is better (throughput)."""
     # 50 req/s in range [0, 100] -> 0.5
-    val = MetricsNormalizer.normalize_single_value(50.0, min_val=0.0, max_val=100.0, lower_is_better=False)
+    val = MetricsNormalizer.normalize_single_value(
+        50.0, min_val=0.0, max_val=100.0, lower_is_better=False
+    )
     assert val == 0.5
 
     # 100 req/s in range [0, 100] -> 1.0
-    val_max = MetricsNormalizer.normalize_single_value(100.0, min_val=0.0, max_val=100.0, lower_is_better=False)
+    val_max = MetricsNormalizer.normalize_single_value(
+        100.0, min_val=0.0, max_val=100.0, lower_is_better=False
+    )
     assert val_max == 1.0
 
 
 def test_normalize_single_value_inverted():
     """Test inverted min-max normalization where lower is better (latency)."""
     # 10ms in range [10ms, 110ms] -> 1.0 (lowest latency is best score)
-    best_lat = MetricsNormalizer.normalize_single_value(10.0, min_val=10.0, max_val=110.0, lower_is_better=True)
+    best_lat = MetricsNormalizer.normalize_single_value(
+        10.0, min_val=10.0, max_val=110.0, lower_is_better=True
+    )
     assert best_lat == 1.0
 
     # 110ms in range [10ms, 110ms] -> 0.0 (highest latency is worst score)
-    worst_lat = MetricsNormalizer.normalize_single_value(110.0, min_val=10.0, max_val=110.0, lower_is_better=True)
+    worst_lat = MetricsNormalizer.normalize_single_value(
+        110.0, min_val=10.0, max_val=110.0, lower_is_better=True
+    )
     assert worst_lat == 0.0
 
 

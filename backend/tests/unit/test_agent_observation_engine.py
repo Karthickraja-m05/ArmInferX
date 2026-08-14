@@ -1,12 +1,11 @@
 """Unit tests for Agent Observation Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.agent_observation_engine import AgentObservationEngine
 
 
-def test_agent_observation_engine(tmp_path: Path):
+def test_agent_observation_engine(tmp_path: Path) -> None:
     """Test capturing full state snapshot of system resources, repositories, and active runtime config."""
     observer = AgentObservationEngine(target_dir=tmp_path)
 

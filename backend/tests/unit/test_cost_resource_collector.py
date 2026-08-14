@@ -1,12 +1,11 @@
 """Unit tests for Cost Resource Collector Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.cost_resource_collector import CostResourceCollector
 
 
-def test_cost_resource_collector(tmp_path: Path):
+def test_cost_resource_collector(tmp_path: Path) -> None:
     """Test recording and retrieving actual resource measurements."""
     collector = CostResourceCollector(target_dir=tmp_path)
 

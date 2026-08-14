@@ -1,16 +1,18 @@
 """Unit tests for Agent Recommendation Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.agent_decision_engine import ActionDecision
 from backend.app.services.agent_observation_engine import AgentStateSnapshot, SystemResourceState
 from backend.app.services.agent_planning_engine import OptimizationPlan
 from backend.app.services.agent_recommendation_engine import AgentRecommendationEngine
-from backend.app.services.agent_workflow_orchestrator import WorkflowExecutionRecord, WorkflowStepRecord
+from backend.app.services.agent_workflow_orchestrator import (
+    WorkflowExecutionRecord,
+    WorkflowStepRecord,
+)
 
 
-def test_agent_recommendation_engine(tmp_path: Path):
+def test_agent_recommendation_engine(tmp_path: Path) -> None:
     """Test generating explainable recommendation reports from workflow records."""
     engine = AgentRecommendationEngine(target_dir=tmp_path)
 
@@ -25,7 +27,11 @@ def test_agent_recommendation_engine(tmp_path: Path):
         snapshot_id="snap-test",
         timestamp="2026-08-12T00:00:00Z",
         active_model_id="qwen2.5-0.5b-instruct",
-        runtime_configuration={"thread_count": 4, "batch_size": 64, "quantization_variant": "Q4_K_M"},
+        runtime_configuration={
+            "thread_count": 4,
+            "batch_size": 64,
+            "quantization_variant": "Q4_K_M",
+        },
         system_resources=sys_res,
         total_experiments_recorded=2,
         total_benchmarks_recorded=2,

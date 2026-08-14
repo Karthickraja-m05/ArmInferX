@@ -3,7 +3,6 @@
 import asyncio
 import time
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from fastapi import status
@@ -24,7 +23,6 @@ from backend.app.core.security import AuthContext, Role, Scope, hash_api_key, ve
 from backend.app.main import app
 from backend.app.services.alert_service import alert_service
 from backend.app.services.backup_service import backup_service
-from backend.app.services.health_service import health_service
 
 client = TestClient(app)
 
@@ -92,7 +90,7 @@ async def test_timeout_handling():
         await with_timeout(slow_func, timeout_seconds=0.05)
 
 
-def test_idempotency_and_workflow_recovery(tmp_path: Path):
+def test_idempotency_and_workflow_recovery(tmp_path: Path) -> None:
     idempotency_file = tmp_path / "idempotency.json"
     mgr = IdempotentOperationManager(cache_file=idempotency_file)
 
@@ -117,7 +115,7 @@ def test_idempotency_and_workflow_recovery(tmp_path: Path):
 
 
 # 2. Security & Verification Tests
-def test_api_key_hashing_and_verification():
+def test_api_key_hashing_and_verification() -> None:
     raw_key = "arm_live_secret_key_9999"
     hashed = hash_api_key(raw_key)
     assert len(hashed) == 64
@@ -125,7 +123,7 @@ def test_api_key_hashing_and_verification():
     assert verify_api_key("wrong_key", raw_key) is False
 
 
-def test_auth_context_scope_permissions():
+def test_auth_context_scope_permissions() -> None:
     context = AuthContext(
         subject_id="test-operator",
         role=Role.OPERATOR,
@@ -137,7 +135,7 @@ def test_auth_context_scope_permissions():
 
 
 # 3. Observability & Tracing Tests
-def test_observability_store_and_trace_context(tmp_path: Path):
+def test_observability_store_and_trace_context(tmp_path: Path) -> None:
     ctx = TraceContext()
     assert ctx.trace_id is not None
     child = ctx.create_child_span()
@@ -162,7 +160,7 @@ def test_observability_store_and_trace_context(tmp_path: Path):
 
 
 # 4. Backup & Disaster Recovery Tests
-def test_backup_create_verify_and_restore(tmp_path: Path):
+def test_backup_create_verify_and_restore(tmp_path: Path) -> None:
     bm_svc = backup_service
     test_backup_id = f"test-bk-{int(time.time())}"
 

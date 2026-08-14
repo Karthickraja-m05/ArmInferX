@@ -1,13 +1,12 @@
 """Unit tests for Cost Comparator Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.cost_calculator import CostEstimate, ProviderPricingConfig
 from backend.app.services.cost_comparator import CostComparator
 
 
-def test_cost_comparator_savings(tmp_path: Path):
+def test_cost_comparator_savings(tmp_path: Path) -> None:
     """Test cost comparison, percentage savings calculation, and ranking."""
     comparator = CostComparator(target_dir=tmp_path)
 

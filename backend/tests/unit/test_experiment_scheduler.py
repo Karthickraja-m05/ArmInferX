@@ -47,7 +47,9 @@ async def test_scheduler_sequential_processing():
         configuration={"thread_count": 4},
     )
 
-    with patch.object(scheduler._executor, "execute_experiment", AsyncMock(return_value=mock_record)):
+    with patch.object(
+        scheduler._executor, "execute_experiment", AsyncMock(return_value=mock_record)
+    ):
         records = await scheduler.process_queue()
         assert len(records) == 1
         assert records[0].status == "COMPLETED"

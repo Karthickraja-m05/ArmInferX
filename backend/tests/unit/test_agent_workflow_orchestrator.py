@@ -11,7 +11,7 @@ from backend.app.services.quality_scoring_engine import QualityEvaluationReport
 
 
 @pytest.mark.asyncio
-async def test_agent_workflow_orchestrator(tmp_path: Path):
+async def test_agent_workflow_orchestrator(tmp_path: Path) -> None:
     """Test full closed-loop autonomous optimization workflow execution."""
     orchestrator = AgentWorkflowOrchestrator(target_dir=tmp_path)
     orchestrator.observer.target_dir = tmp_path / "obs"
@@ -60,9 +60,19 @@ async def test_agent_workflow_orchestrator(tmp_path: Path):
         prompt_scores=[],
     )
 
-    with patch.object(orchestrator.executor, "execute_experiment", AsyncMock(return_value=mock_exp_res)), \
-         patch.object(orchestrator.quality_collector, "collect_dataset_responses", AsyncMock(return_value=mock_q_coll)), \
-         patch.object(orchestrator.quality_scorer, "evaluate_collection_record", return_value=mock_q_report):
+    with (
+        patch.object(
+            orchestrator.executor, "execute_experiment", AsyncMock(return_value=mock_exp_res)
+        ),
+        patch.object(
+            orchestrator.quality_collector,
+            "collect_dataset_responses",
+            AsyncMock(return_value=mock_q_coll),
+        ),
+        patch.object(
+            orchestrator.quality_scorer, "evaluate_collection_record", return_value=mock_q_report
+        ),
+    ):
         record = await orchestrator.run_autonomous_optimization_loop(
             target_model_id="qwen2.5-0.5b-instruct",
             max_steps=2,

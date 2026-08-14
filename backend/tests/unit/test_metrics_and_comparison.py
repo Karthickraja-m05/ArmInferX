@@ -1,6 +1,6 @@
 """Unit tests for Telemetry Metrics Collector and Benchmark Comparison Engine."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi import status

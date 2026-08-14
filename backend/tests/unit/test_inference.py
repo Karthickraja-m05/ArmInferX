@@ -1,11 +1,15 @@
 """Unit tests for ArmServe AI Inference Engine and OpenAI API Router."""
 
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
-from backend.app.services.inference_engine import ChatCompletionRequest, CompletionRequest, engine
+from backend.app.services.inference_engine import (
+    ChatCompletionRequest,
+    ChatMessage,
+    CompletionRequest,
+    engine,
+)
 
 client = TestClient(app)
 
@@ -14,7 +18,9 @@ def test_inference_engine_chat_completion():
     """Verify inference engine generates valid chat completion responses."""
     req = ChatCompletionRequest(
         model="qwen2.5-0.5b-instruct",
-        messages=[{"role": "user", "content": "Hello ArmServe! Tell me about ARM64 execution."}],
+        messages=[
+            ChatMessage(role="user", content="Hello ArmServe! Tell me about ARM64 execution.")
+        ],
         temperature=0.7,
         max_tokens=100,
     )
@@ -54,7 +60,9 @@ def test_openai_api_chat_completions_endpoint():
     """Test POST /v1/chat/completions endpoint."""
     payload = {
         "model": "qwen2.5-0.5b-instruct",
-        "messages": [{"role": "user", "content": "Explain sub-millisecond p99 benchmark optimization."}],
+        "messages": [
+            {"role": "user", "content": "Explain sub-millisecond p99 benchmark optimization."}
+        ],
         "temperature": 0.5,
         "max_tokens": 128,
     }

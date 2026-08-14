@@ -1,13 +1,12 @@
 """Unit tests for Quality Scoring Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.quality_response_collector import EvaluationCollectionRecord, ResponseItem
 from backend.app.services.quality_scoring_engine import QualityScoringEngine
 
 
-def test_quality_scoring_engine(tmp_path: Path):
+def test_quality_scoring_engine(tmp_path: Path) -> None:
     """Test scoring response collection record across dimensions and categories."""
     engine = QualityScoringEngine(target_dir=tmp_path)
 

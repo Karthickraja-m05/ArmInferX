@@ -1,14 +1,13 @@
 """Unit tests for Quality Reporting Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.quality_comparator import QualityComparisonReport
 from backend.app.services.quality_reporter import QualityReporter
 from backend.app.services.quality_scoring_engine import PromptQualityScore, QualityEvaluationReport
 
 
-def test_quality_reporter_multi_format(tmp_path: Path):
+def test_quality_reporter_multi_format(tmp_path: Path) -> None:
     """Test generating Markdown, JSON, and CSV quality evaluation reports."""
     reporter = QualityReporter(target_dir=tmp_path)
 
@@ -55,7 +54,13 @@ def test_quality_reporter_multi_format(tmp_path: Path):
         rejected_due_to_degradation=False,
         summary_reasoning="PASSED: Quality score improved.",
         detailed_category_deltas=[
-            {"category": "reasoning", "baseline_score": 90.0, "target_score": 92.5, "difference": 2.5, "status": "IMPROVED"}
+            {
+                "category": "reasoning",
+                "baseline_score": 90.0,
+                "target_score": 92.5,
+                "difference": 2.5,
+                "status": "IMPROVED",
+            }
         ],
     )
 

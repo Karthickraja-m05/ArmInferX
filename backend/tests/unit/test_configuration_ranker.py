@@ -1,13 +1,12 @@
 """Unit tests for Configuration Ranker Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.configuration_ranker import ConfigurationRanker
 from backend.app.services.constraint_engine import ConstraintSpec
 
 
-def test_configuration_ranker(tmp_path: Path):
+def test_configuration_ranker(tmp_path: Path) -> None:
     """Test ranking configurations by compliance, score, memory, and thread count."""
     ranker = ConfigurationRanker(target_dir=tmp_path)
 

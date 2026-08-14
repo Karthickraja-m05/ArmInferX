@@ -1,13 +1,12 @@
 """Unit tests for Cost Calculation Engine."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.cost_calculator import CostCalculator, ProviderPricingConfig
 from backend.app.services.cost_resource_collector import ResourceUsageMeasurement
 
 
-def test_cost_calculator(tmp_path: Path):
+def test_cost_calculator(tmp_path: Path) -> None:
     """Test cost calculation from measured resource usage using configurable AWS pricing."""
     calculator = CostCalculator(target_dir=tmp_path)
 

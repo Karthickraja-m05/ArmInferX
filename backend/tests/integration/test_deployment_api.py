@@ -1,8 +1,5 @@
 """Integration tests for Deployment REST APIs and System Probes."""
 
-from pathlib import Path
-from unittest.mock import AsyncMock, patch
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -12,7 +9,7 @@ from backend.app.main import app
 @pytest.mark.asyncio
 async def test_probes_endpoints():
     """Test standard Kubernetes / cloud probes: /health, /ready, /live."""
-    transport = ASGITransport(app=app)
+    transport = ASGITransport(app=app)  # type: ignore[arg-type]
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res_health = await client.get("/health")
         assert res_health.status_code == 200
@@ -28,9 +25,9 @@ async def test_probes_endpoints():
 
 
 @pytest.mark.asyncio
-async def test_deployment_api_lifecycle():
-    """Test deployment creation, listing, active retrieval, monitoring, rollback, and config comparison."""
-    transport = ASGITransport(app=app)
+async def test_deployments_crud_workflow():
+    """Test full deployment lifecycle: creation, listing, active retrieval, history, comparison, rollback."""
+    transport = ASGITransport(app=app)  # type: ignore[arg-type]
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 1. POST /deployments (Create deployment)
         payload = {
@@ -95,7 +92,9 @@ async def test_deployment_api_lifecycle():
         assert len(cmp_json["differences"]) == 1
 
         # 7. POST /deployments (Create second deployment to enable rollback test)
-        payload2 = dict(payload)
+        from typing import Any
+
+        payload2: dict[str, Any] = dict(payload)
         payload2["name"] = "prod-release-v2"
         payload2["configuration"]["thread_count"] = 8
         res_create2 = await client.post("/deployments", json=payload2)

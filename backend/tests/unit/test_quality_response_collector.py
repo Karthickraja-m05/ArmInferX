@@ -9,7 +9,7 @@ from backend.app.services.quality_response_collector import QualityResponseColle
 
 
 @pytest.mark.asyncio
-async def test_quality_response_collector(tmp_path: Path):
+async def test_quality_response_collector(tmp_path: Path) -> None:
     """Test response collector calling live inference engine and saving responses."""
     collector = QualityResponseCollector(target_dir=tmp_path)
     collector.dataset_manager.target_dir = tmp_path
@@ -20,7 +20,9 @@ async def test_quality_response_collector(tmp_path: Path):
         "object": "text_completion",
         "created": 123456789,
         "model": "qwen2.5-0.5b-instruct",
-        "choices": [{"text": "The capital of France is Paris.", "index": 0, "finish_reason": "stop"}],
+        "choices": [
+            {"text": "The capital of France is Paris.", "index": 0, "finish_reason": "stop"}
+        ],
         "usage": {"prompt_tokens": 10, "completion_tokens": 8, "total_tokens": 18},
     }
 

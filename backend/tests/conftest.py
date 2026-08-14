@@ -32,7 +32,7 @@ def run_alembic_downgrade(db_url: str) -> None:
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_test_database_env() -> AsyncGenerator[None, None]:
-    """Ensure test database file is cleaned up, migrated, and engine initialized before test session."""
+    """Ensure test database file is cleaned up, tables created, and engine initialized before test session."""
     if TEST_DB_FILE.exists():
         try:
             TEST_DB_FILE.unlink()
@@ -40,12 +40,16 @@ async def setup_test_database_env() -> AsyncGenerator[None, None]:
             pass
 
     os.environ["DATABASE_URL"] = TEST_DB_URL
+    os.environ["ARMSERVE_APP__ENV"] = "test"
 
     # Initialize app core database engine & AsyncSessionLocal for test database
-    await database.init_db(TEST_DB_URL)
+    eng = await database.init_db(TEST_DB_URL)
 
-    # Run migration from empty database to head
-    run_alembic_upgrade(TEST_DB_URL)
+    # Create all tables asynchronously on test database
+    async with eng.begin() as conn:
+        from backend.app.models import Base
+
+        await conn.run_sync(Base.metadata.create_all)
 
     yield
 

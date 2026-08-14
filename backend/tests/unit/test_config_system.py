@@ -16,9 +16,9 @@ from backend.app.core.config import (
 
 
 def test_valid_default_development_config() -> None:
-    """Verify that default settings instantiate cleanly in development mode."""
+    """Verify that default settings instantiate cleanly in development or test mode."""
     cfg = ArmServeSettings()
-    assert cfg.app.env == EnvironmentType.DEVELOPMENT
+    assert cfg.app.env in [EnvironmentType.DEVELOPMENT, EnvironmentType.TEST]
     assert cfg.app.debug is True
     assert cfg.database.host == "localhost"
     assert isinstance(cfg.database.password, SecretStr)

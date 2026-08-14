@@ -1,12 +1,11 @@
 """Unit tests for Experiment Configuration Generator."""
 
 from pathlib import Path
-import pytest
 
 from backend.app.services.experiment_generator import ConfigurationGenerator, ParameterRangeSpec
 
 
-def test_generator_valid_configurations(tmp_path: Path):
+def test_generator_valid_configurations(tmp_path: Path) -> None:
     """Test generating valid, deduplicated configurations."""
     generator = ConfigurationGenerator(target_dir=tmp_path)
     spec = ParameterRangeSpec(
@@ -23,7 +22,7 @@ def test_generator_valid_configurations(tmp_path: Path):
     assert len({c.hash_signature for c in configs}) == 6
 
 
-def test_generator_deduplication(tmp_path: Path):
+def test_generator_deduplication(tmp_path: Path) -> None:
     """Test preventing duplicate configuration generation."""
     generator = ConfigurationGenerator(target_dir=tmp_path)
     spec = ParameterRangeSpec(
@@ -43,7 +42,7 @@ def test_generator_deduplication(tmp_path: Path):
     assert len(configs2) == 0
 
 
-def test_generator_invalid_constraints(tmp_path: Path):
+def test_generator_invalid_constraints(tmp_path: Path) -> None:
     """Test filtering invalid parameter constraints."""
     generator = ConfigurationGenerator(target_dir=tmp_path)
 
