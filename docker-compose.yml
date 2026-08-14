@@ -12,10 +12,11 @@ services:
     environment:
       - ARMSERVE_APP__ENV=production
       - ARMSERVE_APP__DEBUG=false
+      - ARMSERVE_AUTH__SECRET_KEY=armserve_docker_secret_key_32_bytes_long!
       - ARMSERVE_DATABASE__HOST=postgres
       - ARMSERVE_DATABASE__PORT=5432
       - ARMSERVE_DATABASE__USER=armserve
-      - ARMSERVE_DATABASE__PASSWORD=armserve_dev_pass
+      - ARMSERVE_DATABASE__PASSWORD=armserve_docker_secure_pass_2026!
       - ARMSERVE_DATABASE__NAME=armserve_dev
     depends_on:
       postgres:
@@ -42,7 +43,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: armserve
-      POSTGRES_PASSWORD: armserve_dev_pass
+      POSTGRES_PASSWORD: armserve_docker_secure_pass_2026!
       POSTGRES_DB: armserve_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
