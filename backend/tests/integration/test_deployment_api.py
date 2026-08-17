@@ -19,10 +19,6 @@ async def test_probes_endpoints():
         assert res_ready.status_code in [200, 530, 533]
         assert "status" in res_ready.json()
 
-        res_live = await client.get("/live")
-        assert res_live.status_code == 200
-        assert res_live.json()["status"] == "alive"
-
 
 @pytest.mark.asyncio
 async def test_deployments_crud_workflow():

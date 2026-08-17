@@ -14,7 +14,7 @@ from backend.app.api.v1.agent import router as agent_root_router
 from backend.app.api.v1.benchmarks import router as benchmarks_root_router
 from backend.app.api.v1.deployment import router as deployment_root_router
 from backend.app.api.v1.experiments import router as experiments_root_router
-from backend.app.api.v1.health import probe_router
+
 from backend.app.api.v1.openai_api import router as openai_root_router
 from backend.app.api.v1.operational import router as operational_root_router
 from backend.app.api.v1.performix import router as performix_root_router
@@ -30,6 +30,7 @@ from backend.app.core.errors import (
 )
 from backend.app.core.logging import configure_logging, logger
 from backend.app.core.middleware import (
+    ClientDisconnectMiddleware,
     MaintenanceModeMiddleware,
     RequestLoggingMiddleware,
     SecurityHeadersMiddleware,
@@ -92,8 +93,11 @@ app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(MaintenanceModeMiddleware)
 
 # CORS Middleware (Configurable via settings / environment)
-cors_origins = ["*"] if settings.app.debug else settings.app.cors_origins
-
+# Note: allow_credentials=True is incompatible with allow_origins=["*"].
+# Use explicit origins + regex pattern for dynamic subdomains (e.g. Vercel previews).
+cors_origins_raw = ["*"] if settings.app.debug else settings.app.cors_origins
+# Filter out wildcard when credentials are enabled
+cors_origins = [o for o in cors_origins_raw if o != "*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -104,6 +108,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Client Disconnect Guard (outermost — added last due to LIFO order)
+# Catches ExceptionGroup(ClientDisconnected) from Render proxy TTL timeouts
+app.add_middleware(ClientDisconnectMiddleware)
+
 # Global Exception Handlers for Structured Error Responses
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
@@ -112,7 +120,9 @@ app.add_exception_handler(SQLAlchemyError, db_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 # Include Routers
-app.include_router(probe_router)
+# Note: probe_router from v1/health.py is NOT included here because
+# root_health_router already provides /health and /ready at root level.
+# Including both causes duplicate route conflicts on /ready.
 app.include_router(root_health_router)
 app.include_router(api_v1_router)
 app.include_router(openai_root_router)

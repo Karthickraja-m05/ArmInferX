@@ -16,20 +16,14 @@ from backend.app.services.performix_runner import performix_runner
 
 logger = structlog.get_logger("backend.app.api.v1.performix")
 
-router = APIRouter(tags=["Performix Integration"])
+router = APIRouter(prefix="/performix", tags=["Performix Integration"])
 
 
 @router.post(
-    "/performix/run",
+    "/run",
     response_model=PerformixRunResult,
     status_code=status.HTTP_201_CREATED,
-    operation_id="run_performix_direct",
-)
-@router.post(
-    "/api/v1/performix/run",
-    response_model=PerformixRunResult,
-    status_code=status.HTTP_201_CREATED,
-    operation_id="run_performix_api_v1",
+    operation_id="run_performix_benchmark",
 )
 async def run_performix_benchmark(body: PerformixRunRequest) -> PerformixRunResult:
     """Execute real Arm Performix benchmark workload on AWS ARM64 Graviton environment."""
@@ -44,10 +38,7 @@ async def run_performix_benchmark(body: PerformixRunRequest) -> PerformixRunResu
         ) from err
 
 
-@router.get("/performix/results", response_model=dict, operation_id="get_performix_results_direct")
-@router.get(
-    "/api/v1/performix/results", response_model=dict, operation_id="get_performix_results_api_v1"
-)
+@router.get("/results", response_model=dict, operation_id="get_performix_results")
 async def get_performix_results(
     limit: int = Query(default=20, ge=1, le=100),
     model_id: str | None = Query(default=None),
@@ -66,14 +57,10 @@ async def get_performix_results(
 
 
 @router.get(
-    "/performix/comparison",
+    "/comparison",
     response_model=PerformixComparisonResult,
-    operation_id="get_performix_comparison_direct",
-)
-@router.get(
-    "/api/v1/performix/comparison",
-    response_model=PerformixComparisonResult,
-    operation_id="get_performix_comparison_api_v1",
+    summary="Compare Performix vs ArmServe",
+    operation_id="compare_performix_runs",
 )
 async def compare_performix_benchmark(
     armserve_run_id: str = Query(default="bm-run-001"),
@@ -105,8 +92,11 @@ async def compare_performix_benchmark(
         ) from err
 
 
-@router.get("/performix/report", operation_id="get_performix_report_direct")
-@router.get("/api/v1/performix/report", operation_id="get_performix_report_api_v1")
+@router.get(
+    "/report",
+    summary="Generate Validation Evidence Report",
+    operation_id="generate_performix_report",
+)
 async def generate_performix_report(
     format: Literal["markdown", "json", "csv"] = Query(default="markdown"),
 ) -> Response:

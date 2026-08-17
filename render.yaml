@@ -17,7 +17,7 @@ services:
       - key: ARMSERVE_APP__HOST
         value: "0.0.0.0"
       - key: ARMSERVE_APP__CORS_ORIGINS
-        value: '["*"]'
+        value: '["https://arminferx-ui.vercel.app","https://app.armserve.io"]'
       - key: ARMSERVE_AUTH__SECRET_KEY
         generateValue: true
       - key: ARMSERVE_DATABASE__PASSWORD

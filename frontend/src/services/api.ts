@@ -450,33 +450,33 @@ export async function calculateCost(payload: CostCalculationRequest): Promise<Co
 
 // Deployment APIs
 export async function fetchDeployments(): Promise<{ total_count: number; deployments: DeploymentRecord[] }> {
-  return request<{ total_count: number; deployments: DeploymentRecord[] }>('/deployments');
+  return request<{ total_count: number; deployments: DeploymentRecord[] }>('/api/v1/deployments');
 }
 
 export async function fetchActiveDeployment(): Promise<DeploymentRecord> {
-  return request<DeploymentRecord>('/deployments/active');
+  return request<DeploymentRecord>('/api/v1/deployments/active');
 }
 
 export async function fetchDeploymentsHealth(): Promise<DeploymentHealthSummary> {
-  return request<DeploymentHealthSummary>('/deployments/health');
+  return request<DeploymentHealthSummary>('/api/v1/deployments/health');
 }
 
 export async function createDeployment(payload: DeploymentCreateRequest): Promise<DeploymentRecord> {
-  return request<DeploymentRecord>('/deployments', {
+  return request<DeploymentRecord>('/api/v1/deployments', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export async function rollbackDeployment(deploymentId: string, reason?: string): Promise<RollbackResponse> {
-  return request<RollbackResponse>(`/deployments/${deploymentId}/rollback`, {
+  return request<RollbackResponse>(`/api/v1/deployments/${deploymentId}/rollback`, {
     method: 'POST',
     body: JSON.stringify({ reason: reason || 'Manual dashboard rollback' }),
   });
 }
 
 export async function fetchDeploymentMonitoring(deploymentId: string): Promise<DeploymentTelemetry> {
-  return request<DeploymentTelemetry>(`/deployments/${deploymentId}/monitoring`);
+  return request<DeploymentTelemetry>(`/api/v1/deployments/${deploymentId}/monitoring`);
 }
 
 // Autonomous Agent APIs
@@ -572,14 +572,14 @@ export async function runPerformixBenchmark(payload?: {
   context_length?: number;
   iterations?: number;
 }): Promise<PerformixRunResult> {
-  return request<PerformixRunResult>('/performix/run', {
+  return request<PerformixRunResult>('/api/v1/performix/run', {
     method: 'POST',
     body: JSON.stringify(payload || {}),
   });
 }
 
 export async function fetchPerformixResults(): Promise<{ total_count: number; results: PerformixRunResult[] }> {
-  return request<{ total_count: number; results: PerformixRunResult[] }>('/performix/results');
+  return request<{ total_count: number; results: PerformixRunResult[] }>('/api/v1/performix/results');
 }
 
 export async function fetchPerformixComparison(
@@ -589,11 +589,11 @@ export async function fetchPerformixComparison(
   const query = performixRunId
     ? `?armserve_run_id=${armserveRunId}&performix_run_id=${performixRunId}`
     : `?armserve_run_id=${armserveRunId}`;
-  return request<PerformixComparisonResult>(`/performix/comparison${query}`);
+  return request<PerformixComparisonResult>(`/api/v1/performix/comparison${query}`);
 }
 
 export async function fetchPerformixReport(format: 'markdown' | 'json' | 'csv' = 'markdown'): Promise<string> {
-  const url = buildUrl(`/performix/report?format=${format}`);
+  const url = buildUrl(`/api/v1/performix/report?format=${format}`);
   const response = await fetch(url);
   return await response.text();
 }

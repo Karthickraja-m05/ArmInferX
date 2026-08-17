@@ -39,7 +39,6 @@ class AppConfig(BaseModel):
             "http://localhost:5173",
             "https://app.armserve.io",
             "https://arminferx-ui.vercel.app",
-            "*",
         ]
     )
 
@@ -188,13 +187,13 @@ class ArmServeSettings(BaseSettings):
             self.app.api_host = self.API_HOST
         if self.API_PORT is not None:
             self.app.api_port = self.API_PORT
-        if self.SECRET_KEY is not None and self.auth.secret_key is None:
+        if self.SECRET_KEY is not None:
             self.auth.secret_key = self.SECRET_KEY
         if self.DATABASE_URL is not None and self.database.database_url is None:
             self.database.database_url = self.DATABASE_URL
         elif os.getenv("DATABASE_URL") and self.database.database_url is None:
             self.database.database_url = SecretStr(os.getenv("DATABASE_URL") or "")
-        if self.DB_PASSWORD is not None and self.database.password is None:
+        if self.DB_PASSWORD is not None:
             self.database.password = self.DB_PASSWORD
 
         # Production Validation Rules
