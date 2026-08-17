@@ -1,0 +1,1033 @@
+/* =============================================================================
+   ArmServe Premium Theme System
+   Dark Mode: Neumorphism  |  Light Mode: Glassmorphism
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. DARK THEME (Neumorphism) – CSS Variables
+   --------------------------------------------------------------------------- */
+:root,
+[data-theme="dark"] {
+  /* Core surfaces */
+  --bg-dark: #0F1115;
+  --bg-card: #181C24;
+  --bg-card-hover: #1E222D;
+  --bg-panel: #1A1E28;
+  --bg-sidebar: #14171E;
+  --bg-header: #0F1115;
+  --bg-input: #12151B;
+
+  /* Neumorphic shadows */
+  --neu-shadow-raised:
+    6px 6px 14px rgba(0, 0, 0, 0.55),
+    -4px -4px 10px rgba(255, 255, 255, 0.03);
+  --neu-shadow-hover:
+    8px 8px 20px rgba(0, 0, 0, 0.65),
+    -6px -6px 16px rgba(255, 255, 255, 0.04);
+  --neu-shadow-pressed:
+    inset 4px 4px 10px rgba(0, 0, 0, 0.5),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.02);
+  --neu-shadow-subtle:
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    -2px -2px 6px rgba(255, 255, 255, 0.02);
+
+  /* Borders */
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-color-strong: rgba(255, 255, 255, 0.12);
+  --border-card: none;
+
+  /* Text */
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+
+  /* Accents */
+  --accent-emerald: #10b981;
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-amber: #f59e0b;
+
+  /* Glow */
+  --glow-primary: rgba(6, 182, 212, 0.12);
+  --glow-purple: rgba(139, 92, 246, 0.10);
+  --glow-accent: rgba(6, 182, 212, 0.15);
+
+  /* Glass (minimal in dark mode) */
+  --glass-blur: 0px;
+  --glass-bg: transparent;
+  --glass-border: transparent;
+
+  /* Radii (neumorphic = more rounded) */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+
+  /* Backdrop */
+  --backdrop-filter: none;
+
+  /* Modal */
+  --modal-bg: rgba(0, 0, 0, 0.8);
+
+  /* Table */
+  --table-header-bg: rgba(255, 255, 255, 0.025);
+  --table-row-hover: rgba(255, 255, 255, 0.03);
+
+  /* Form */
+  --form-bg: rgba(0, 0, 0, 0.35);
+
+  /* Badge translucency */
+  --badge-alpha: 0.15;
+
+  /* 3D depth */
+  --card-perspective: 800px;
+  --card-transform-hover: translateY(-3px);
+  --card-transition-duration: 0.35s;
+
+  /* Icon float */
+  --icon-transform: translateY(0px);
+  --icon-transform-hover: translateY(-2px);
+}
+
+/* ---------------------------------------------------------------------------
+   2. LIGHT THEME (Glassmorphism) – CSS Variables
+   --------------------------------------------------------------------------- */
+[data-theme="light"] {
+  /* Core surfaces */
+  --bg-dark: #E8ECF4;
+  --bg-card: rgba(255, 255, 255, 0.55);
+  --bg-card-hover: rgba(255, 255, 255, 0.72);
+  --bg-panel: rgba(255, 255, 255, 0.48);
+  --bg-sidebar: rgba(255, 255, 255, 0.60);
+  --bg-header: rgba(255, 255, 255, 0.50);
+  --bg-input: rgba(255, 255, 255, 0.65);
+
+  /* Glass shadows (soft, diffused) */
+  --neu-shadow-raised:
+    0 4px 24px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+  --neu-shadow-hover:
+    0 8px 32px rgba(0, 0, 0, 0.10),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+  --neu-shadow-pressed:
+    inset 0 2px 6px rgba(0, 0, 0, 0.06);
+  --neu-shadow-subtle:
+    0 2px 12px rgba(0, 0, 0, 0.04);
+
+  /* Borders – soft white */
+  --border-color: rgba(255, 255, 255, 0.65);
+  --border-color-strong: rgba(255, 255, 255, 0.85);
+  --border-card: 1px solid rgba(255, 255, 255, 0.7);
+
+  /* Text */
+  --text-main: #1a1d26;
+  --text-muted: #5a6072;
+  --text-dim: #8891a4;
+
+  /* Accents (slightly richer for light bg) */
+  --accent-emerald: #059669;
+  --accent-cyan: #0891b2;
+  --accent-blue: #2563eb;
+  --accent-purple: #7c3aed;
+  --accent-amber: #d97706;
+
+  /* Glow */
+  --glow-primary: rgba(6, 182, 212, 0.08);
+  --glow-purple: rgba(139, 92, 246, 0.06);
+  --glow-accent: rgba(37, 99, 235, 0.08);
+
+  /* Glass */
+  --glass-blur: 20px;
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.55);
+
+  /* Radii (glassmorphism = clean, rounded) */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+
+  /* Backdrop */
+  --backdrop-filter: blur(20px) saturate(1.6);
+
+  /* Modal */
+  --modal-bg: rgba(200, 205, 218, 0.6);
+
+  /* Table */
+  --table-header-bg: rgba(0, 0, 0, 0.025);
+  --table-row-hover: rgba(0, 0, 0, 0.02);
+
+  /* Form */
+  --form-bg: rgba(255, 255, 255, 0.55);
+
+  /* Badge translucency */
+  --badge-alpha: 0.12;
+
+  /* 3D depth */
+  --card-perspective: 800px;
+  --card-transform-hover: translateY(-4px);
+  --card-transition-duration: 0.4s;
+
+  /* Icon float */
+  --icon-transform: translateY(0px);
+  --icon-transform-hover: translateY(-2px);
+}
+
+/* ---------------------------------------------------------------------------
+   3. GLOBAL THEME TRANSITION (Morph Effect)
+   --------------------------------------------------------------------------- */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition:
+    background-color 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    background 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    border 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 500ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   4. NEUMORPHIC / GLASS SURFACE OVERRIDES
+   --------------------------------------------------------------------------- */
+
+/* Body & App Shell */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+}
+
+.app-shell {
+  background-color: var(--bg-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  box-shadow: var(--neu-shadow-subtle);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+[data-theme="light"] .sidebar {
+  border-right: 1px solid var(--glass-border);
+}
+
+/* Nav items */
+.nav-item {
+  border-radius: var(--radius-sm);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.nav-item:hover {
+  transform: translateX(2px);
+}
+
+[data-theme="dark"] .nav-item:hover {
+  box-shadow: var(--neu-shadow-subtle);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="light"] .nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.nav-item.active {
+  border-radius: var(--radius-sm);
+}
+
+[data-theme="dark"] .nav-item.active {
+  box-shadow:
+    inset 3px 3px 6px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="light"] .nav-item.active {
+  background: linear-gradient(90deg, rgba(8, 145, 178, 0.12), rgba(37, 99, 235, 0.06));
+  box-shadow: 0 2px 10px rgba(6, 182, 212, 0.12);
+  border-left-color: var(--accent-cyan);
+}
+
+/* Header */
+.app-header {
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+[data-theme="light"] .app-header {
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* Metric Cards – 3D + Neumorphism / Glass */
+.metric-card {
+  background-color: var(--bg-card);
+  border: var(--border-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-shadow-raised);
+  backdrop-filter: var(--backdrop-filter);
+  transform-style: preserve-3d;
+  perspective: var(--card-perspective);
+  transition:
+    box-shadow var(--card-transition-duration) ease,
+    transform var(--card-transition-duration) ease,
+    background-color var(--card-transition-duration) ease;
+}
+
+.metric-card:hover {
+  box-shadow: var(--neu-shadow-hover);
+  transform: var(--card-transform-hover);
+}
+
+[data-theme="dark"] .metric-card {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="light"] .metric-card {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Panel Cards – 3D + Neumorphism / Glass */
+.panel-card {
+  background-color: var(--bg-card);
+  border: var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--neu-shadow-raised);
+  backdrop-filter: var(--backdrop-filter);
+  transform-style: preserve-3d;
+  perspective: var(--card-perspective);
+  transition:
+    box-shadow var(--card-transition-duration) ease,
+    transform var(--card-transition-duration) ease,
+    background-color var(--card-transition-duration) ease;
+}
+
+.panel-card:hover {
+  box-shadow: var(--neu-shadow-hover);
+  transform: var(--card-transform-hover);
+}
+
+[data-theme="dark"] .panel-card {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="light"] .panel-card {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Table Wrappers */
+.table-wrapper {
+  background-color: var(--bg-card);
+  border: var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--neu-shadow-raised);
+  backdrop-filter: var(--backdrop-filter);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .table-wrapper {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="light"] .table-wrapper {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.data-table th {
+  background-color: var(--table-header-bg);
+}
+
+.data-table tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+/* Buttons – Neumorphic depth */
+.btn {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--neu-shadow-subtle);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    opacity 0.25s ease,
+    background 0.25s ease;
+  transform-style: preserve-3d;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--neu-shadow-raised);
+}
+
+.btn:active {
+  transform: translateY(0px);
+  box-shadow: var(--neu-shadow-pressed);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  color: #fff;
+}
+
+[data-theme="light"] .btn-primary {
+  box-shadow:
+    0 4px 14px rgba(6, 182, 212, 0.25),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .btn-secondary {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+/* Icon buttons */
+.btn-icon {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--neu-shadow-subtle);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.btn-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--neu-shadow-raised);
+}
+
+.btn-icon:active {
+  box-shadow: var(--neu-shadow-pressed);
+  transform: translateY(0px);
+}
+
+[data-theme="light"] .btn-icon {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+/* Status badges */
+.status-badge {
+  border-radius: 20px;
+  box-shadow: var(--neu-shadow-subtle);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+.status-badge.ready {
+  background: rgba(16, 185, 129, var(--badge-alpha));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.not-ready {
+  background: rgba(239, 68, 68, var(--badge-alpha));
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* DB Ping Tag */
+.db-ping-tag {
+  box-shadow: var(--neu-shadow-subtle);
+  border-radius: var(--radius-sm);
+  backdrop-filter: var(--backdrop-filter);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .db-ping-tag {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Pills */
+.pill {
+  box-shadow: var(--neu-shadow-subtle);
+  border-radius: 20px;
+  backdrop-filter: var(--backdrop-filter);
+}
+
+[data-theme="dark"] .pill {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-color);
+}
+
+[data-theme="light"] .pill {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: var(--text-muted);
+}
+
+/* Badges */
+.badge {
+  border-radius: 6px;
+  box-shadow: var(--neu-shadow-subtle);
+}
+
+/* Arch badge (sidebar footer) */
+.arch-badge {
+  box-shadow: var(--neu-shadow-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .arch-badge {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+/* Brand logo icon */
+.brand-logo-icon {
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-shadow-raised);
+}
+
+/* Forms – Neumorphic inputs */
+.form-input,
+.form-select {
+  background: var(--form-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--neu-shadow-pressed);
+  color: var(--text-main);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow:
+    var(--neu-shadow-pressed),
+    0 0 0 3px var(--glow-primary);
+}
+
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Modals */
+.modal-backdrop {
+  background: var(--modal-bg);
+  backdrop-filter: blur(12px) saturate(1.4);
+}
+
+.modal-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--neu-shadow-hover);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+[data-theme="light"] .modal-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+/* Empty / Error / Loading states */
+.empty-container {
+  background-color: var(--bg-card);
+  border: 1px dashed var(--border-color-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--neu-shadow-subtle);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+.empty-icon-wrapper {
+  box-shadow: var(--neu-shadow-raised);
+  border-radius: 50%;
+}
+
+[data-theme="dark"] .empty-icon-wrapper {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="light"] .empty-icon-wrapper {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.error-card {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--neu-shadow-subtle);
+}
+
+[data-theme="light"] .error-card {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-notice-card {
+  border-radius: var(--radius-md);
+  box-shadow: var(--neu-shadow-subtle);
+  backdrop-filter: var(--backdrop-filter);
+}
+
+[data-theme="light"] .status-notice-card {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.15);
+}
+
+/* Sidebar brand */
+.sidebar-brand {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .sidebar-brand {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .sidebar-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Info tables */
+.info-table td {
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ---------------------------------------------------------------------------
+   5. ICON FLOAT EFFECT
+   --------------------------------------------------------------------------- */
+.metric-icon,
+.nav-icon,
+.notice-icon,
+.error-icon {
+  transition: transform 0.3s ease;
+  transform: var(--icon-transform);
+}
+
+.metric-card:hover .metric-icon,
+.nav-item:hover .nav-icon,
+.panel-card:hover .notice-icon {
+  transform: var(--icon-transform-hover);
+}
+
+/* ---------------------------------------------------------------------------
+   6. 3D CARD TILT (JavaScript-free subtle CSS tilt on hover)
+   --------------------------------------------------------------------------- */
+.metric-card,
+.panel-card {
+  transition:
+    box-shadow var(--card-transition-duration) ease,
+    transform var(--card-transition-duration) cubic-bezier(0.23, 1, 0.32, 1),
+    background-color var(--card-transition-duration) ease;
+}
+
+/* ---------------------------------------------------------------------------
+   7. BACKGROUND EFFECTS
+   --------------------------------------------------------------------------- */
+
+/* Dark mode: animated radial gradients & ambient lighting */
+[data-theme="dark"] .app-shell::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 600px 400px at 10% 20%, rgba(6, 182, 212, 0.06), transparent),
+    radial-gradient(ellipse 500px 500px at 80% 60%, rgba(139, 92, 246, 0.05), transparent),
+    radial-gradient(ellipse 400px 300px at 50% 90%, rgba(59, 130, 246, 0.04), transparent);
+  animation: ambientShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes ambientShift {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Dark mode: soft glowing particles */
+[data-theme="dark"] .app-shell::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(2px 2px at 20% 30%, rgba(6, 182, 212, 0.3), transparent),
+    radial-gradient(2px 2px at 70% 20%, rgba(139, 92, 246, 0.25), transparent),
+    radial-gradient(2px 2px at 40% 70%, rgba(59, 130, 246, 0.2), transparent),
+    radial-gradient(1.5px 1.5px at 90% 85%, rgba(6, 182, 212, 0.2), transparent),
+    radial-gradient(1.5px 1.5px at 15% 80%, rgba(139, 92, 246, 0.15), transparent),
+    radial-gradient(2px 2px at 55% 45%, rgba(245, 158, 11, 0.12), transparent);
+  animation: particleFloat 30s linear infinite alternate;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-5px, 8px);
+  }
+  50% {
+    transform: translate(3px, -5px);
+  }
+  75% {
+    transform: translate(-3px, 3px);
+  }
+  100% {
+    transform: translate(5px, -8px);
+  }
+}
+
+/* Light mode: gradient blobs & glass circles */
+[data-theme="light"] .app-shell::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 700px 500px at 15% 25%, rgba(6, 182, 212, 0.10), transparent),
+    radial-gradient(ellipse 600px 600px at 75% 55%, rgba(139, 92, 246, 0.08), transparent),
+    radial-gradient(ellipse 500px 400px at 50% 85%, rgba(59, 130, 246, 0.06), transparent),
+    radial-gradient(circle 200px at 85% 15%, rgba(245, 158, 11, 0.06), transparent);
+  animation: blobFloat 25s ease-in-out infinite alternate;
+}
+
+@keyframes blobFloat {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.75;
+    transform: scale(0.98);
+  }
+}
+
+/* Light mode: glass circles floating highlights */
+[data-theme="light"] .app-shell::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle 120px at 25% 20%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(circle 80px at 70% 30%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(circle 100px at 50% 75%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(circle 60px at 85% 70%, rgba(255, 255, 255, 0.25), transparent);
+  animation: highlightFloat 18s ease-in-out infinite alternate;
+}
+
+@keyframes highlightFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(10px, -8px) scale(1.05);
+  }
+  100% {
+    transform: translate(-5px, 5px) scale(0.97);
+  }
+}
+
+/* Ensure content sits above background effects */
+.sidebar,
+.main-viewport,
+.app-header,
+.content-area {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   8. THEME TOGGLE BUTTON
+   --------------------------------------------------------------------------- */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  padding: 2px;
+  transition:
+    background 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] .toggle-track {
+  background: linear-gradient(135deg, #1a1e2e, #252a3a);
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.04),
+    0 0 12px rgba(139, 92, 246, 0.15);
+}
+
+[data-theme="light"] .toggle-track {
+  background: linear-gradient(135deg, #e0e8f4, #f0f4fa);
+  box-shadow:
+    inset 1px 1px 4px rgba(0, 0, 0, 0.08),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.9),
+    0 0 12px rgba(245, 158, 11, 0.12);
+}
+
+.toggle-thumb {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+.toggle-thumb.dark {
+  transform: translateX(2px);
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  box-shadow:
+    0 2px 8px rgba(139, 92, 246, 0.5),
+    0 0 16px rgba(139, 92, 246, 0.2);
+}
+
+.toggle-thumb.light {
+  transform: translateX(26px);
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  box-shadow:
+    0 2px 8px rgba(245, 158, 11, 0.5),
+    0 0 16px rgba(245, 158, 11, 0.2);
+}
+
+.toggle-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-icon {
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
+  color: #fff;
+}
+
+.moon-icon {
+  transform: rotate(-20deg);
+}
+
+.sun-icon {
+  transform: rotate(0deg);
+}
+
+.toggle-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+[data-theme="dark"] .toggle-glow {
+  background: radial-gradient(circle at 30% 50%, rgba(139, 92, 246, 0.15), transparent 70%);
+}
+
+[data-theme="light"] .toggle-glow {
+  background: radial-gradient(circle at 70% 50%, rgba(245, 158, 11, 0.12), transparent 70%);
+}
+
+/* ---------------------------------------------------------------------------
+   9. LIGHT THEME SPECIFIC TEXT / COLOR OVERRIDES
+   --------------------------------------------------------------------------- */
+[data-theme="light"] .page-title,
+[data-theme="light"] .section-title,
+[data-theme="light"] .modal-title,
+[data-theme="light"] .panel-title,
+[data-theme="light"] .brand-name,
+[data-theme="light"] .metric-value {
+  color: var(--text-main);
+}
+
+[data-theme="light"] .page-subtitle,
+[data-theme="light"] .section-subtitle,
+[data-theme="light"] .panel-description,
+[data-theme="light"] .metric-label,
+[data-theme="light"] .form-label,
+[data-theme="light"] .brand-tag,
+[data-theme="light"] .text-muted {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .metric-footer {
+  color: var(--text-dim);
+}
+
+[data-theme="light"] .code-text {
+  color: var(--accent-cyan);
+}
+
+[data-theme="light"] .latency-val {
+  color: var(--accent-emerald);
+}
+
+[data-theme="light"] .data-table th {
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .data-table td {
+  color: var(--text-main);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .data-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Light mode error colors stay vibrant */
+[data-theme="light"] .error-title {
+  color: #dc2626;
+}
+
+[data-theme="light"] .error-description {
+  color: #ef4444;
+}
+
+[data-theme="light"] .error-icon {
+  color: #dc2626;
+}
+
+/* Badge overrides for light */
+[data-theme="light"] .badge-blue {
+  background: rgba(37, 99, 235, 0.10);
+  color: var(--accent-blue);
+}
+
+[data-theme="light"] .badge-emerald {
+  background: rgba(5, 150, 105, 0.10);
+  color: var(--accent-emerald);
+}
+
+[data-theme="light"] .badge-purple {
+  background: rgba(124, 58, 237, 0.10);
+  color: var(--accent-purple);
+}
+
+/* Light mode info-table */
+[data-theme="light"] .info-table td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .info-table td:first-child {
+  color: var(--text-muted);
+}
+
+/* Light mode loading */
+[data-theme="light"] .loading-container {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .spinner-icon {
+  color: var(--accent-cyan);
+}
+
+/* Light mode empty state */
+[data-theme="light"] .empty-container {
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+}
+
+/* ---------------------------------------------------------------------------
+   10. SCROLLBAR STYLING
+   --------------------------------------------------------------------------- */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="light"] ::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}

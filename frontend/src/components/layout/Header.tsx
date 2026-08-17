@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchReadiness, ReadinessResponse } from '../../services/api';
 import { CheckCircle2, XCircle, RefreshCw, Database } from 'lucide-react';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface HeaderProps {
   title: string;
@@ -72,6 +73,8 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
             </>
           )}
         </div>
+
+        <ThemeToggle />
 
         <button
           className={`btn-icon ${isRefreshing ? 'spinning' : ''}`}
