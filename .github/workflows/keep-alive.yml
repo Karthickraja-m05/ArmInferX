@@ -13,6 +13,5 @@ jobs:
     steps:
       - name: Ping Render Backend
         run: |
-          BACKEND_URL="${{ secrets.RENDER_BACKEND_URL || vars.RENDER_BACKEND_URL || 'https://armserve.onrender.com/health' }}"
-          echo "Pinging ${BACKEND_URL}..."
-          curl -s -f -m 30 "${BACKEND_URL}" || echo "Warning: Keep-alive ping failed or timed out"
+          echo "Pinging https://armserve.onrender.com/health..."
+          curl -s -f -m 30 "https://armserve.onrender.com/health" || echo "Warning: Keep-alive ping failed or timed out"
