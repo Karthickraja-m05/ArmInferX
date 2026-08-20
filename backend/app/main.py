@@ -14,7 +14,6 @@ from backend.app.api.v1.agent import router as agent_root_router
 from backend.app.api.v1.benchmarks import router as benchmarks_root_router
 from backend.app.api.v1.deployment import router as deployment_root_router
 from backend.app.api.v1.experiments import router as experiments_root_router
-
 from backend.app.api.v1.openai_api import router as openai_root_router
 from backend.app.api.v1.operational import router as operational_root_router
 from backend.app.api.v1.performix import router as performix_root_router

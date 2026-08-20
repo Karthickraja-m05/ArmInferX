@@ -16,7 +16,6 @@ async def test_get_runtime_status(client: AsyncClient) -> None:
 async def test_execute_inference(client: AsyncClient) -> None:
     """Test the /api/v1/inference endpoint."""
     response = await client.post(
-        "/api/v1/inference",
-        json={"prompt": "hello", "model": "test-model", "max_tokens": 100}
+        "/api/v1/inference", json={"prompt": "hello", "model": "test-model", "max_tokens": 100}
     )
     assert response.status_code == 200

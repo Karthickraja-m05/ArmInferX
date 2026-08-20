@@ -6,7 +6,6 @@ ClientDisconnected crashes from anyio TaskGroups when Render's proxy disconnects
 
 import time
 import uuid
-from typing import Any
 
 import structlog
 from starlette.datastructures import MutableHeaders
@@ -18,15 +17,26 @@ from backend.app.core.metrics import metrics_collector
 
 logger = structlog.get_logger("backend.app.api.access")
 
+try:
+    _BaseExceptionGroup: type[BaseException] = BaseExceptionGroup  # type: ignore[name-defined]
+except NameError:
+    try:
+        from exceptiongroup import (
+            BaseExceptionGroup as _BaseExceptionGroup,  # type: ignore[no-redef]
+        )
+    except ImportError:
+        _BaseExceptionGroup = ()  # type: ignore[assignment,misc]
+
 
 def _is_client_disconnect(exc: BaseException) -> bool:
     """Check if an exception (possibly wrapped in ExceptionGroup) is a client disconnect."""
     name = type(exc).__name__
     if name in ("ClientDisconnect", "ClientDisconnected"):
         return True
-    # Python 3.11+ ExceptionGroups from anyio TaskGroups
-    if isinstance(exc, BaseExceptionGroup):
-        return all(_is_client_disconnect(e) for e in exc.exceptions)
+    # Python 3.11+ / exceptiongroup ExceptionGroups from anyio TaskGroups
+    if isinstance(exc, _BaseExceptionGroup) or hasattr(exc, "exceptions"):
+        exceptions = getattr(exc, "exceptions", ())
+        return all(_is_client_disconnect(e) for e in exceptions)
     return False
 
 
