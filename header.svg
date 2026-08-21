@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="100%" height="100%" style="background-color: #070a12; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070a12"/>
+      <stop offset="50%" stop-color="#0c1222"/>
+      <stop offset="100%" stop-color="#060911"/>
+    </linearGradient>
+
+    <!-- Glowing Accent Gradients -->
+    <linearGradient id="armCyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D2FF"/>
+      <stop offset="100%" stop-color="#0070F3"/>
+    </linearGradient>
+
+    <linearGradient id="purpleGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#131d36" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0b1122" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <!-- Filters for Neon Glow -->
+    <filter id="neonGlowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- Grid Pattern -->
+    <pattern id="circuitGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.75" stroke-opacity="0.4"/>
+      <circle cx="40" cy="0" r="1.5" fill="#00D2FF" fill-opacity="0.3"/>
+    </pattern>
+  </defs>
+
+  <!-- Base Background -->
+  <rect width="1200" height="360" fill="url(#bgGrad)"/>
+  <rect width="1200" height="360" fill="url(#circuitGrid)"/>
+
+  <!-- Glowing background ambient orbs -->
+  <circle cx="150" cy="80" r="180" fill="#00D2FF" fill-opacity="0.06" filter="url(#neonGlowCyan)"/>
+  <circle cx="1050" cy="180" r="220" fill="#8B5CF6" fill-opacity="0.05" filter="url(#neonGlowCyan)"/>
+  <circle cx="600" cy="340" r="150" fill="#10B981" fill-opacity="0.04" filter="url(#neonGlowCyan)"/>
+
+  <!-- Decorative Circuit lines -->
+  <g stroke="#00D2FF" stroke-width="1.2" stroke-opacity="0.3" fill="none">
+    <path d="M 60 40 L 220 40 L 260 80 L 400 80" />
+    <circle cx="60" cy="40" r="3" fill="#00D2FF"/>
+    <circle cx="400" cy="80" r="3" fill="#00D2FF"/>
+
+    <path d="M 1140 40 L 980 40 L 940 80 L 800 80" />
+    <circle cx="1140" cy="40" r="3" fill="#A855F7"/>
+    <circle cx="800" cy="80" r="3" fill="#A855F7"/>
+  </g>
+
+  <!-- Top Category Tag -->
+  <g transform="translate(600, 48)">
+    <rect x="-175" y="-14" width="350" height="28" rx="14" fill="#0c1a30" stroke="#00D2FF" stroke-width="1.2"/>
+    <circle cx="-150" cy="0" r="4" fill="#00D2FF"/>
+    <text x="5" y="4" fill="#00D2FF" font-size="11" font-weight="700" letter-spacing="2.5" text-anchor="middle">ARM CREATE 2026 • TRACK 2: CLOUD AI</text>
+  </g>
+
+  <!-- Central Title & Logo Group -->
+  <g transform="translate(600, 122)">
+    <!-- Central Title -->
+    <text x="0" y="8" fill="#FFFFFF" font-size="46" font-weight="900" letter-spacing="1.5" text-anchor="middle" filter="url(#softShadow)">
+      ArmServe <tspan fill="url(#armCyanGrad)">(ArmInferX)</tspan>
+    </text>
+  </g>
+
+  <!-- Subtitle -->
+  <text x="600" y="172" fill="#94A3B8" font-size="16.5" font-weight="400" letter-spacing="0.5" text-anchor="middle">
+    Autonomous AI Inference Optimization &amp; Zero-Downtime Deployment Platform for <tspan fill="#38BDF8" font-weight="600">Arm64 Cloud Compute</tspan>
+  </text>
+
+  <text x="600" y="198" fill="#64748B" font-size="13" font-weight="500" letter-spacing="1" text-anchor="middle">
+    AWS Graviton3 (Neoverse V1) • Microsoft Azure Cobalt 100 • Google Cloud Axion • Ampere Altra
+  </text>
+
+  <!-- Metric Badges Row (4 Glassmorphic Cards) -->
+  <g transform="translate(75, 236)">
+    
+    <!-- Metric 1: Throughput -->
+    <g filter="url(#softShadow)">
+      <rect x="0" y="0" width="240" height="84" rx="12" fill="url(#cardBg)" stroke="#00D2FF" stroke-width="1.5" stroke-opacity="0.7"/>
+      <rect x="12" y="12" width="6" height="60" rx="3" fill="url(#armCyanGrad)"/>
+      <text x="32" y="32" fill="#94A3B8" font-size="11" font-weight="700" letter-spacing="1">THROUGHPUT</text>
+      <text x="32" y="58" fill="#FFFFFF" font-size="22" font-weight="900">384.2 <tspan font-size="13" font-weight="600" fill="#38BDF8">TPS</tspan></text>
+      <text x="32" y="74" fill="#34D399" font-size="11" font-weight="700">▲ +192.5% Speedup</text>
+    </g>
+
+    <!-- Metric 2: P50 Latency -->
+    <g transform="translate(270, 0)" filter="url(#softShadow)">
+      <rect x="0" y="0" width="240" height="84" rx="12" fill="url(#cardBg)" stroke="#818CF8" stroke-width="1.5" stroke-opacity="0.7"/>
+      <rect x="12" y="12" width="6" height="60" rx="3" fill="url(#purpleGlow)"/>
+      <text x="32" y="32" fill="#94A3B8" font-size="11" font-weight="700" letter-spacing="1">P50 LATENCY</text>
+      <text x="32" y="58" fill="#FFFFFF" font-size="22" font-weight="900">4.85 <tspan font-size="13" font-weight="600" fill="#A78BFA">ms</tspan></text>
+      <text x="32" y="74" fill="#34D399" font-size="11" font-weight="700">▼ 65.8% Latency Cut</text>
+    </g>
+
+    <!-- Metric 3: Cost Reduction -->
+    <g transform="translate(540, 0)" filter="url(#softShadow)">
+      <rect x="0" y="0" width="240" height="84" rx="12" fill="url(#cardBg)" stroke="#10B981" stroke-width="1.5" stroke-opacity="0.7"/>
+      <rect x="12" y="12" width="6" height="60" rx="3" fill="url(#emeraldGrad)"/>
+      <text x="32" y="32" fill="#94A3B8" font-size="11" font-weight="700" letter-spacing="1">SERVING COST</text>
+      <text x="32" y="58" fill="#FFFFFF" font-size="22" font-weight="900">$0.062 <tspan font-size="12" font-weight="600" fill="#6EE7B7">/ 1M Tok</tspan></text>
+      <text x="32" y="74" fill="#34D399" font-size="11" font-weight="700">▼ 65.8% Savings</text>
+    </g>
+
+    <!-- Metric 4: Autonomous Rollback & SLA -->
+    <g transform="translate(810, 0)" filter="url(#softShadow)">
+      <rect x="0" y="0" width="240" height="84" rx="12" fill="url(#cardBg)" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.7"/>
+      <rect x="12" y="12" width="6" height="60" rx="3" fill="url(#amberGrad)"/>
+      <text x="32" y="32" fill="#94A3B8" font-size="11" font-weight="700" letter-spacing="1">ROLLBACK &amp; QUALITY</text>
+      <text x="32" y="58" fill="#FFFFFF" font-size="22" font-weight="900">120.4 <tspan font-size="13" font-weight="600" fill="#FCD34D">ms</tspan></text>
+      <text x="32" y="74" fill="#FBBF24" font-size="11" font-weight="700">🎯 98.5% Quality SLA</text>
+    </g>
+
+  </g>
+
+</svg>
